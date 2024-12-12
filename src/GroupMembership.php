@@ -272,7 +272,7 @@ class GroupMembership extends plugin
 
     function removeFromGroup(string $dn)
     {
-        $updatedMemberList = [];
+        $removeMember = "";
         $groupMemberName = "";
         
         $ldap = $this->config->get_ldap_link();
@@ -281,27 +281,21 @@ class GroupMembership extends plugin
             $group = $ldap->fetch();
             if (isset($group["member"]) && in_array($this->dn, $group['member'])) {
                 $groupMemberName = 'member';
-                for ($i = 0; $i < $group['member']['count']; $i++) {
-                    if ($group['member'][$i] != $this->dn) {
-                        $updatedMemberList[] = $group['member'][$i];
-                    }
-                }
+                $removeMember = $this->dn;
             }
             if (isset($group["memberUid"]) && in_array($this->uid, $group['memberUid'])) {
                 $groupMemberName = 'memberUid';
-                for ($i = 0; $i < $group['memberUid']['count']; $i++) {
-                    if ($group['memberUid'][$i] != $this->uid) {
-                        $updatedMemberList[] = $group['memberUid'][$i];
-                    }
-                }
+                $removeMember = $this->uid;
             }
         
             $ldap->cd($dn);
-            $ldap->modify([$groupMemberName => $updatedMemberList]);
+            $ldap->rm([$groupMemberName => $removeMember]);
             if (!$ldap->success()) {
                 msg_dialog::display(_("LDAP error"), msgPool::ldaperror($ldap->get_error(), $dn, LDAP_MOD, __CLASS__));
             }
         }
+
+        $this->refreshGroupList();
     }
 
     // Plugin informations for acl handling
