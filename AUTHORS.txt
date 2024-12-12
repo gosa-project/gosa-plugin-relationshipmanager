@@ -1,0 +1,3 @@
+The relationship management Plugin for GOsa is developed by
+
+  Sebastian Sternfeld <sternfeld@gonicus.de>
