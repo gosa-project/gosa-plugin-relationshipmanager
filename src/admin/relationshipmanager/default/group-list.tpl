@@ -17,7 +17,7 @@
 </div>
 
 
-<!-- TODO: Autocomplete have not option for multiselect!!!
+<!-- TODO: Autocomplete have no option for multiselect!!!
 <input type="text" id="object-group-input" class="autocomplete">
 <input type="text" id="posix-group-input" class="autocomplete">
 {literal}

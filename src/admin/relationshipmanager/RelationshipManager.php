@@ -18,11 +18,21 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-class GroupMembership extends plugin
+namespace GosaRelManager\admin\relationshipmanager;
+
+use \plugin as Plugin;
+use \msgPool as msgPool;
+use \log as log;
+use \msg_dialog as msg_dialog;
+use \sortableListing as sortableListing;
+use \stats as stats;
+use \LDAP as LDAP;
+
+class RelationshipManager extends Plugin
 {
     // Definitions
-    public $plHeadline = "Group Membership";
-    public $plDescription = "Manage membership for user in posix or object groups";
+    public $plHeadline = "Relationship manager";
+    public $plDescription = "Manage user relationship";
     public $plIcon = "";
     public $matIcon = "groups";
 
