@@ -5,14 +5,14 @@
         <select name="object_group_selection[]" id="objectgroup_selection" multiple>
             {html_options options=$objectGroups}
         </select>
-        <label for="objectgroup-selection">Objectgroups</label>
+        <label for="objectgroup-selection">{t}Objectgroup{/t}</label>
     </div>
     
     <div class="input-field col s6 xl5">
         <select name="posix_group_selection[]" id="posixgroup_selection" multiple>
             {html_options options=$posixGroups}
         </select>
-        <label for="posixgroup-selection">Groups</label>
+        <label for="posixgroup-selection">{t}Group{/t}</label>
     </div>
 </div>
 

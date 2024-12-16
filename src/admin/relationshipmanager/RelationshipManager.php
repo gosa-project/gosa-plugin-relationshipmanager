@@ -77,6 +77,11 @@ class RelationshipManager extends Plugin
             new log("view", "groups/" . get_class($this), $this->dn);
         }
 
+        // Display dialog to allow selection of groups
+        if (isset($_POST['edit_groupmembership'])) {
+            $this->groupSelect = new groupRelationshipSelect($this->config, get_userinfo());
+        }
+
         if (empty($this->list)) {
             $this->refreshGroupList();
         }
@@ -158,7 +163,7 @@ class RelationshipManager extends Plugin
      */
     function refreshGroupList()
     {
-        $msg = _("Group membership");
+        $msg = _("Relationship Manager");
         $attrs = ['cn' => _("Name"), 'description' => _("Description")];
 
         $list = new sortableListing();
@@ -312,13 +317,13 @@ class RelationshipManager extends Plugin
     static function plInfo()
     {
         return (array(
-            "plShortName"   => _('Group membership'),
-            "plDescription" => _('Group membership'),
+            "plShortName"   => _('Relationship manager'),
+            "plDescription" => _('Manage user relationship'),
             "plSelfModify"  => FALSE,
             "plDepends"     => array(),
             "plPriority"    => 1,
             "plSection"     => array("admin"),
-            "plCategory"    => array("groupmembership" => array("description" => _("Group membership"))),
+            "plCategory"    => array("groupmembership" => array("description" => _("Manage user relationship"))),
 
             "plProvidedAcls" => array()
         ));
