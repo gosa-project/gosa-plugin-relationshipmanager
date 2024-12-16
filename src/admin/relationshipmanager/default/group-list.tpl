@@ -1,22 +1,23 @@
 {$objectList}
 
 <div class="row">
-    <div class="input-field col s6 xl5">
-        <select name="object_group_selection[]" id="objectgroup_selection" multiple>
-            {html_options options=$objectGroups}
-        </select>
-        <label for="objectgroup-selection">{t}Objectgroup{/t}</label>
-    </div>
-    
-    <div class="input-field col s6 xl5">
-        <select name="posix_group_selection[]" id="posixgroup_selection" multiple>
-            {html_options options=$posixGroups}
-        </select>
-        <label for="posixgroup-selection">{t}Group{/t}</label>
-    </div>
+    <button class="btn-small" type="submit" name="edit_membership">{msgPool type=addButton}</button>
 </div>
 
 
+<!-- <div class="input-field col s6 xl5">
+    <select name="object_group_selection[]" id="objectgroup_selection" multiple>
+        {html_options options=$objectGroups}
+    </select>
+    <label for="objectgroup-selection">Objectgroups</label>
+</div>
+
+<div class="input-field col s6 xl5">
+    <select name="posix_group_selection[]" id="posixgroup_selection" multiple>
+        {html_options options=$posixGroups}
+    </select>
+    <label for="posixgroup-selection">Groups</label>
+</div> -->
 <!-- TODO: Autocomplete have no option for multiselect!!!
 <input type="text" id="object-group-input" class="autocomplete">
 <input type="text" id="posix-group-input" class="autocomplete">
