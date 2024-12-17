@@ -39,6 +39,7 @@ class RelationshipManager extends Plugin
     // Class attributes
     public $view_logged = false;
     public $uid = "";
+    public $groupRelationSelect;
 
     // attribute list for save action
     public $objectClasses = ["gosaGroupOfNames", "posixGroup"];
@@ -77,6 +78,11 @@ class RelationshipManager extends Plugin
             new log("view", "groups/" . get_class($this), $this->dn);
         }
 
+        // Display dialog to allow selection of groups
+        if (isset($_POST['edit_posixgroupmembership'])) {
+            $this->groupRelationSelect = new GroupRelationshipSelect($this->config, get_userinfo());
+        }
+
         if (empty($this->list)) {
             $this->refreshGroupList();
         }
@@ -104,6 +110,15 @@ class RelationshipManager extends Plugin
         // Load Smarty
         $smarty = get_smarty();
 
+        // Render group select template if set.
+        if ($this->groupRelationSelect) {
+            $this->dialog = TRUE;
+
+            // Build up blocklist
+            // session::set('filterBlacklist', array('dn' => array_keys($this->groupMembership)));
+            return ($this->groupRelationSelect->execute());
+        }
+
         // Assign acls
         $tmp = $this->plInfo();
         foreach ($tmp['plProvidedAcls'] as $name => $translation) {
@@ -115,7 +130,7 @@ class RelationshipManager extends Plugin
         $smarty->assign('posixGroups', $this->getAllPosixGroups());
         $smarty->assign('objectGroups', $this->getAllObjectGroups());
 
-        return ($smarty->fetch(get_template_path('group-list.tpl', TRUE, dirname(__FILE__))));
+        return ($smarty->fetch(get_template_path('GroupList.tpl', TRUE, dirname(__FILE__))));
     }
 
     function save()
