@@ -27,6 +27,7 @@ use \msg_dialog as msg_dialog;
 use \sortableListing as sortableListing;
 use \stats as stats;
 use \LDAP as LDAP;
+use \session as session;
 
 class RelationshipManager extends Plugin
 {
@@ -40,13 +41,17 @@ class RelationshipManager extends Plugin
     public $view_logged = false;
     public $uid = "";
     public $groupRelationSelect;
+    public sortableListing $list;
+    public $listData;
+    public $initTime;
+    public $plugin;
+    public $addToPosixGroups = [];
+    public $addToObjectgroups = [];
+    public GroupType $currentGroupType;
 
     // attribute list for save action
     public $objectClasses = ["gosaGroupOfNames", "posixGroup"];
     public $objectList = [];
-    public sortableListing $list;
-    public $initTime;
-    public $plugin;
 
     function __construct(&$config, $dn = NULL, $parent = NULL)
     {
@@ -80,7 +85,38 @@ class RelationshipManager extends Plugin
 
         // Display dialog to allow selection of groups
         if (isset($_POST['edit_posixgroupmembership'])) {
-            $this->groupRelationSelect = new GroupRelationshipSelect($this->config, get_userinfo());
+            $this->currentGroupType = GroupType::POSIX_GROUP;
+            $this->groupRelationSelect = new GroupRelationshipSelect($this->config, get_userinfo(), $this->currentGroupType, $this->uid);
+        }
+
+        // Display dialog to allow selection of groups
+        if (isset($_POST['edit_objectgroupmembership'])) {
+            $this->currentGroupType = GroupType::OBJECT_GROUP;
+            $this->groupRelationSelect = new GroupRelationshipSelect($this->config, get_userinfo(), $this->currentGroupType, $this->dn);
+        }
+
+        // Cancel group dialog
+        if (isset($_POST['add_groups_cancel']) || isset($_POST['cancel-abort'])) {
+            $this->groupRelationSelect = NULL;
+        }
+
+        // Add groups selected in groupSelect dialog to ours.
+        if ((isset($_POST['add_groups_finish']) || isset($_POST['ok-save'])) && $this->groupRelationSelect) {
+            $groups = $this->groupRelationSelect->detectPostActions();
+            if (isset($groups['targets'])) {
+                switch ($this->currentGroupType) {
+                    case GroupType::POSIX_GROUP:
+                        $this->addToPosixGroups = $groups['targent'];
+                        break;
+
+                    case GroupType::OBJECT_GROUP:
+                        $this->addToObjectgroups = $groups['targent'];
+                        break;
+                }
+                $this->is_modified = TRUE;
+            }
+            $this->groupRelationSelect = NULL;
+            $this->refreshGroupList();
         }
 
         if (empty($this->list)) {
@@ -115,7 +151,7 @@ class RelationshipManager extends Plugin
             $this->dialog = TRUE;
 
             // Build up blocklist
-            // session::set('filterBlacklist', array('dn' => array_keys($this->groupMembership)));
+            session::set('filterBlacklist', array('dn' => array_keys($this->listData)));
             return ($this->groupRelationSelect->execute());
         }
 
@@ -139,10 +175,10 @@ class RelationshipManager extends Plugin
 
         parent::save();
 
-        if (isset($_POST["object_group_selection"])) {
+        if (isset($this->addToObjectgroups)) {
             $attrs = ['member' => $this->dn];
 
-            foreach (get_post("object_group_selection") as $groupDN) {
+            foreach ($this->addToObjectgroups as $groupDN) {
                 $ldap->cd($groupDN);
                 $ldap->modify($attrs);
                 if (!$ldap->success()) {
@@ -151,12 +187,14 @@ class RelationshipManager extends Plugin
                     new log("modify", "groups/" . get_class($this), $groupDN, array_keys($attrs), $ldap->get_error());
                 }
             }
+
+            $this->addToObjectgroups = NULL;
         }
 
-        if (isset($_POST["posix_group_selection"])) {
+        if (isset($this->addToPosixGroups)) {
             $attrs = ['memberUid' => $this->uid];
 
-            foreach ($_POST["posix_group_selection"] as $groupDN) {
+            foreach ($this->addToPosixGroups as $groupDN) {
                 $ldap->cd($groupDN);
                 $ldap->modify($attrs);
                 if (!$ldap->success()) {
@@ -165,6 +203,8 @@ class RelationshipManager extends Plugin
                     new log("modify", "groups/" . get_class($this), $groupDN, array_keys($attrs), $ldap->get_error());
                 }
             }
+
+            $this->addToPosixGroups = NULL;
         }
     }
 
@@ -208,6 +248,12 @@ class RelationshipManager extends Plugin
                 $type = _("Posix group");
             }
 
+            foreach ($this->addToObjectgroups as $key => $value) {
+            }
+
+            foreach ($this->addToPosixGroups as $key => $value) {
+            }
+
             if (!$ldap->success()) {
                 msg_dialog::display(_("LDAP error"), msgPool::ldaperror($ldap->get_error(), $this->dn, LDAP_SEARCH, __CLASS__));
             } elseif ($ldap->count()) {
@@ -235,6 +281,7 @@ class RelationshipManager extends Plugin
         $str .= "</div></div>";
         $str .= "<br>";
         $this->list = $list;
+        $this->listData = $data;
         $this->objectList = $str;
     }
 
@@ -299,7 +346,7 @@ class RelationshipManager extends Plugin
     {
         $removeMember = "";
         $groupMemberName = "";
-        
+
         $ldap = $this->config->get_ldap_link();
         $ldap->cat($dn);
         if ($ldap->count() == 1) {
@@ -312,7 +359,7 @@ class RelationshipManager extends Plugin
                 $groupMemberName = 'memberUid';
                 $removeMember = $this->uid;
             }
-        
+
             $ldap->cd($dn);
             $ldap->rm([$groupMemberName => $removeMember]);
             if (!$ldap->success()) {
@@ -321,6 +368,16 @@ class RelationshipManager extends Plugin
         }
 
         $this->refreshGroupList();
+    }
+
+    function addToGroup($groups)
+    {
+        /* include global link_info */
+        $ldap = $this->config->get_ldap_link();
+
+        /* Walk through groups and add the descriptive entry if not exists */
+        foreach ($groups as $value) {
+        }
     }
 
     // Plugin informations for acl handling

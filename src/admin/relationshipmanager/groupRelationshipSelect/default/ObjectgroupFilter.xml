@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <filterdef>
   <definition>
-    <category>groups</category>
+    <category>ogroups</category>
     <initial>true</initial>
     <default>default</default>
-    <scope>auto</scope>
+    <scope>sub</scope>
     <attribute>dn</attribute>
     <attribute>objectClass</attribute>
     <attribute>cn</attribute>
@@ -16,7 +16,7 @@
     <label>Default filter</label>
     <query>
       <backend>LDAPBlacklist</backend>
-      <filter>(&amp;(objectClass=gosaGroupOfNames)(cn=$))</filter>
+      <filter>(&amp;(objectClass=gosaGroupOfNames)(cn=$)#)</filter>
     </query>
     <autocomplete>
       <attribute>cn</attribute>
