@@ -34,7 +34,14 @@ msgstr "Verwalte Benutzer Entitäten-Beziehung"
 #: src/admin/relationshipmanager/RelationshipManager.php:197
 #: src/admin/relationshipmanager/RelationshipManager.php:304
 msgid "LDAP error"
-msgstr "LDAP-Fehler"
+msgstr "LDAP Fehler"
+
+#: src/admin/relationshipmanager/RelationshipManager.php:161
+#: src/admin/relationshipmanager/RelationshipManager.php:315
+#: src/admin/relationshipmanager/RelationshipManager.php:316
+#: src/admin/relationshipmanager/RelationshipManager.php:321
+msgid "Group membership"
+msgstr ""
 
 #: src/admin/relationshipmanager/RelationshipManager.php:162
 #: src/admin/relationshipmanager/RelationshipManager.php:230
