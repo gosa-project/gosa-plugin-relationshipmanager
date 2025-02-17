@@ -18,12 +18,13 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-namespace GosaRelationshipManager\admin\relationshipmanager;
+namespace GosaRelationshipManager\admin\relationshipmanager\groupRelationshipSelect;
 
 use \management as management;
 use \filter as filter;
 use \listing as listing;
 use \LDAP as LDAP;
+use \GosaRelationshipManager\admin\relationshipmanager\GroupType as GroupType;
 
 /**
  * Use to build group selection for posix - or objectgroups
