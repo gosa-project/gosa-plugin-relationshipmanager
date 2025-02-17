@@ -25,7 +25,6 @@ use \msgPool as msgPool;
 use \log as log;
 use \msg_dialog as msg_dialog;
 use \sortableListing as sortableListing;
-use \stats as stats;
 use \LDAP as LDAP;
 use \session as session;
 use \GosaRelationshipManager\admin\relationshipmanager\groupRelationshipSelect\GroupRelationshipSelect as GroupRelationshipSelect;
@@ -54,24 +53,15 @@ class RelationshipManager extends Plugin
     public $objectClasses = ["gosaGroupOfNames", "posixGroup"];
     public $objectList = [];
 
-    function __construct(&$config, $dn = NULL, $parent = NULL)
+    function __construct(&$config, $dn = null, $parent = null)
     {
         parent::__construct($config, $dn, $parent);
 
-        $this->initTime = microtime(TRUE);
+        $this->initTime = microtime(true);
         $this->uid = $this->attrs['uid'][0];
 
         // Remember account status
         $this->initially_was_account = $this->is_account;
-
-        stats::log(
-            'plugin',
-            $class = get_class($this),
-            $category = array($this->acl_category),
-            $action = 'open',
-            $amount = 1,
-            $duration = (microtime(TRUE) - $this->initTime)
-        );
     }
 
     function execute()
@@ -98,7 +88,7 @@ class RelationshipManager extends Plugin
 
         // Cancel group dialog
         if (isset($_POST['add_groups_cancel']) || isset($_POST['cancel-abort'])) {
-            $this->groupRelationSelect = NULL;
+            $this->groupRelationSelect = null;
         }
 
         // Add groups selected in groupSelect dialog to ours.
@@ -114,9 +104,9 @@ class RelationshipManager extends Plugin
                         $this->addToObjectgroups = $groups['targent'];
                         break;
                 }
-                $this->is_modified = TRUE;
+                $this->is_modified = true;
             }
-            $this->groupRelationSelect = NULL;
+            $this->groupRelationSelect = null;
             $this->refreshGroupList();
         }
 
@@ -149,7 +139,7 @@ class RelationshipManager extends Plugin
 
         // Render group select template if set.
         if ($this->groupRelationSelect) {
-            $this->dialog = TRUE;
+            $this->dialog = true;
 
             // Build up blocklist
             session::set('filterBlacklist', array('dn' => array_keys($this->listData)));
@@ -167,7 +157,7 @@ class RelationshipManager extends Plugin
         $smarty->assign('posixGroups', $this->getAllPosixGroups());
         $smarty->assign('objectGroups', $this->getAllObjectGroups());
 
-        return ($smarty->fetch(get_template_path('GroupList.tpl', TRUE, dirname(__FILE__))));
+        return ($smarty->fetch(get_template_path('GroupList.tpl', true, dirname(__FILE__))));
     }
 
     function save()
@@ -189,7 +179,7 @@ class RelationshipManager extends Plugin
                 }
             }
 
-            $this->addToObjectgroups = NULL;
+            $this->addToObjectgroups = null;
         }
 
         if (isset($this->addToPosixGroups)) {
@@ -205,7 +195,7 @@ class RelationshipManager extends Plugin
                 }
             }
 
-            $this->addToPosixGroups = NULL;
+            $this->addToPosixGroups = null;
         }
     }
 
@@ -387,7 +377,7 @@ class RelationshipManager extends Plugin
         return (array(
             "plShortName"   => _('Relationship manager'),
             "plDescription" => _('Manage user relationship'),
-            "plSelfModify"  => FALSE,
+            "plSelfModify"  => false,
             "plDepends"     => array(),
             "plPriority"    => 1,
             "plSection"     => array("admin"),
