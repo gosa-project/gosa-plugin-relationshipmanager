@@ -24,7 +24,7 @@ use \management as management;
 use \filter as filter;
 use \listing as listing;
 use \LDAP as LDAP;
-use \GosaRelationshipManager\admin\relationshipmanager\GroupType as GroupType;
+use \GosaRelationshipManager\admin\relationshipmanager\ResourceType as ResourceType;
 
 /**
  * Use to build group selection for posix - or objectgroups
@@ -44,7 +44,7 @@ class GroupRelationshipSelect extends management
      * construct an group relationship select dialog
      * @param $config GOsa config
      * @param $ui userinfo
-     * @param GroupType group type for the group selection e.g. posixGroup
+     * @param ResourceType group type for the group selection e.g. posixGroup
      * @param string $identifier the needed identifier to sort out already related groups,
      * posixGroup's require the uid and objectgroups require the dn of a user.
      */
@@ -58,7 +58,7 @@ class GroupRelationshipSelect extends management
         $this->storagePoints = array(get_ou("core", "groupRDN"));
 
         // Build filter
-        if ($type == GroupType::POSIX_GROUP) {
+        if ($type == ResourceType::POSIX_GROUP) {
             $filter = new filter(get_template_path("PosixGroupFilter.xml", true, dirname(__FILE__)));
 
             // filter already related groups
@@ -81,7 +81,7 @@ class GroupRelationshipSelect extends management
             $plugname = 'groups';
         }
 
-        if ($type == GroupType::OBJECT_GROUP) {
+        if ($type == ResourceType::OBJECT_GROUP) {
             $filter = new filter(get_template_path("ObjectgroupFilter.xml", true, dirname(__FILE__)));
 
             // filter already related groups

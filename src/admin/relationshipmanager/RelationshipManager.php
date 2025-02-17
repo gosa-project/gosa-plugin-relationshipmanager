@@ -47,7 +47,7 @@ class RelationshipManager extends Plugin
     public $plugin;
     public $addToPosixGroups = [];
     public $addToObjectgroups = [];
-    public GroupType $currentGroupType;
+    public ResourceType $currentResourceType;
 
     // attribute list for save action
     public $objectClasses = ["gosaGroupOfNames", "posixGroup"];
@@ -76,14 +76,14 @@ class RelationshipManager extends Plugin
 
         // Display dialog to allow selection of groups
         if (isset($_POST['edit_posixgroupmembership'])) {
-            $this->currentGroupType = GroupType::POSIX_GROUP;
-            $this->groupRelationSelect = new GroupRelationshipSelect($this->config, get_userinfo(), $this->currentGroupType, $this->uid);
+            $this->currentResourceType = ResourceType::POSIX_GROUP;
+            $this->groupRelationSelect = new GroupRelationshipSelect($this->config, get_userinfo(), $this->currentResourceType, $this->uid);
         }
 
         // Display dialog to allow selection of groups
         if (isset($_POST['edit_objectgroupmembership'])) {
-            $this->currentGroupType = GroupType::OBJECT_GROUP;
-            $this->groupRelationSelect = new GroupRelationshipSelect($this->config, get_userinfo(), $this->currentGroupType, $this->dn);
+            $this->currentResourceType = ResourceType::OBJECT_GROUP;
+            $this->groupRelationSelect = new GroupRelationshipSelect($this->config, get_userinfo(), $this->currentResourceType, $this->dn);
         }
 
         // Cancel group dialog
@@ -95,12 +95,12 @@ class RelationshipManager extends Plugin
         if ((isset($_POST['add_groups_finish']) || isset($_POST['ok-save'])) && $this->groupRelationSelect) {
             $groups = $this->groupRelationSelect->detectPostActions();
             if (isset($groups['targets'])) {
-                switch ($this->currentGroupType) {
-                    case GroupType::POSIX_GROUP:
+                switch ($this->currentResourceType) {
+                    case ResourceType::POSIX_GROUP:
                         $this->addToPosixGroups = $groups['targent'];
                         break;
 
-                    case GroupType::OBJECT_GROUP:
+                    case ResourceType::OBJECT_GROUP:
                         $this->addToObjectgroups = $groups['targent'];
                         break;
                 }

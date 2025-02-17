@@ -20,7 +20,7 @@
 
 namespace GosaRelationshipManager\admin\relationshipmanager;
 
-enum GroupType
+enum ResourceType
 {
     case POSIX_GROUP;
     case OBJECT_GROUP;
