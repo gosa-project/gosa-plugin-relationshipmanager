@@ -32,8 +32,8 @@ use \GosaRelationshipManager\admin\relationshipmanager\GroupType as GroupType;
 class GroupRelationshipSelect extends management
 {
 
-    protected $skipFooter = TRUE;
-    protected $skipHeader = TRUE;
+    protected $skipFooter = true;
+    protected $skipHeader = true;
 
     var $plHeadline = "Group selection";
 
