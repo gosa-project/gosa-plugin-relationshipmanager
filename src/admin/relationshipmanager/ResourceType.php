@@ -22,6 +22,72 @@ namespace GosaRelationshipManager\admin\relationshipmanager;
 
 enum ResourceType
 {
+    case INVALID;
     case POSIX_GROUP;
     case OBJECT_GROUP;
+}
+
+abstract class Relationship
+{
+    protected ResourceType $resourceType = ResourceType::INVALID;
+    protected string $ldapBaseClass;
+    protected \ldapMultiplexer $ldap;
+    protected string $entry;
+
+    public function getResourceType(): ResourceType
+    {
+        return $this->resourceType;
+    }
+    public function setResourceType(ResourceType $resourceType)
+    {
+        $this->resourceType = $resourceType;
+    }
+    public function getLdapBaseClass(): string
+    {
+        return $this->ldapBaseClass;
+    }
+    protected function entryMatchesLdapClass(): bool
+    {
+        $res = $this->ldap->cat($this->entry, ['dn', 'objectClass']);
+
+        if ($res) {
+            $values = $this->ldap->fetch($res);
+            if (isset($values['objectClass'])) {
+                if (in_array($this->ldapBaseClass, $values['objctClass'])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+}
+
+class PosixGroupRelationship extends Relationship
+{
+    protected string $ldapBaseClass = 'posixGroup';
+
+    public function __construct(string $dn, \ldapMultiplexer $ldap)
+    {
+        $this->entry = $dn;
+        $this->ldap = $ldap;
+
+        if ($this->entryMatchesLdapClass()) {
+            $this->setResourceType(ResourceType::POSIX_GROUP);
+        }
+    }
+}
+
+class ObjectGroupRelationship extends Relationship
+{
+    protected string $ldapBaseClass = 'gosaGroupOfNames';
+
+    public function __construct(string $dn, \ldapMultiplexer $ldap)
+    {
+        $this->entry = $dn;
+        $this->ldap = $ldap;
+        if ($this->entryMatchesLdapClass()) {
+            $this->setResourceType(ResourceType::OBJECT_GROUP);
+        }
+    }
 }
