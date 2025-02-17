@@ -1,7 +1,8 @@
 <?php
 
-namespace GosaRelManager\admin\relationshipmanager;
+namespace GosaRelationshipManager\admin\relationshipmanager;
 
-function __($GETTEXT) {
-    return dgettext("relationshipManager", $GETTEXT);
+function __($GETTEXT)
+{
+    return dgettext("GosaRelationshipManager", $GETTEXT);
 }
