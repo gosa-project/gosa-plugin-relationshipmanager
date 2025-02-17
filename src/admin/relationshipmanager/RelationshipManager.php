@@ -392,7 +392,7 @@ class RelationshipManager extends Plugin
             "plSection"     => array("admin"),
             "plCategory"    => array("groupmembership" => array("description" => _("Manage user relationship"))),
 
-            "plProvidedAcls" => array()
+            "plProvidedAcls" => ['']
         ));
     }
 }

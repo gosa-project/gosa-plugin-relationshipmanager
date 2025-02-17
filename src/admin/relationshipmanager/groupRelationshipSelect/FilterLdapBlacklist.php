@@ -18,18 +18,18 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-namespace GosaRelationshipManager\admin\relationshipmanager;
+namespace GosaRelationshipManager\admin\relationshipmanager\groupRelationshipSelect;
 
 use \filterLDAP as filterLDAP;
 use \session as session;
 
-class FilterLDAPBlacklist
+class FilterLdapBlacklist
 {
 
     static function query($base, $scope, $filter, $attributes, $category, $objectStorage = "")
     {
         $result = filterLDAP::query($base, $scope, $filter, $attributes, $category, $objectStorage);
-        return (filterLDAPBlacklist::filterByBlacklist($result));
+        return (FilterLdapBlacklist::filterByBlacklist($result));
     }
 
     static function filterByBlacklist($entries)
