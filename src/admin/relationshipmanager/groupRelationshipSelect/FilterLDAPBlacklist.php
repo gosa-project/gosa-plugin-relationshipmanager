@@ -17,35 +17,37 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
 namespace GosaRelationshipManager\admin\relationshipmanager;
 
 use \filterLDAP as filterLDAP;
 use \session as session;
 
-class FilterLDAPBlacklist {
+class FilterLDAPBlacklist
+{
 
-  static function query($base, $scope, $filter, $attributes, $category, $objectStorage= "")
-  {
-    $result = filterLDAP::query($base, $scope, $filter, $attributes, $category, $objectStorage);
-    return(filterLDAPBlacklist::filterByBlacklist($result));
-  }
-
-  static function filterByBlacklist($entries)
-  {
-    if(session::is_set('filterBlacklist')){
-      $blist = session::get('filterBlacklist');
-      foreach($blist as $attr_name => $attr_values){
-        foreach($attr_values as $match){
-          foreach($entries as $id => $entry){
-            if(isset($entry[$attr_name])){
-              $test = $entry[$attr_name];
-              if(!is_array($test)) $test = array($test);
-              if(in_array_strict($match, $test)) unset($entries[$id]);
-            }
-          }
-        }
-      }
+    static function query($base, $scope, $filter, $attributes, $category, $objectStorage = "")
+    {
+        $result = filterLDAP::query($base, $scope, $filter, $attributes, $category, $objectStorage);
+        return (filterLDAPBlacklist::filterByBlacklist($result));
     }
-    return(array_values($entries));
-  }
+
+    static function filterByBlacklist($entries)
+    {
+        if (session::is_set('filterBlacklist')) {
+            $blist = session::get('filterBlacklist');
+            foreach ($blist as $attr_name => $attr_values) {
+                foreach ($attr_values as $match) {
+                    foreach ($entries as $id => $entry) {
+                        if (isset($entry[$attr_name])) {
+                            $test = $entry[$attr_name];
+                            if (!is_array($test)) $test = array($test);
+                            if (in_array_strict($match, $test)) unset($entries[$id]);
+                        }
+                    }
+                }
+            }
+        }
+        return (array_values($entries));
+    }
 }
