@@ -28,6 +28,7 @@ use \sortableListing as sortableListing;
 use \stats as stats;
 use \LDAP as LDAP;
 use \session as session;
+use \GosaRelationshipManager\admin\relationshipmanager\groupRelationshipSelect\GroupRelationshipSelect as GroupRelationshipSelect;
 
 class RelationshipManager extends Plugin
 {
