@@ -116,7 +116,6 @@ class RelationshipManager extends Plugin
 
         foreach (array_keys($_POST) as $postParam) {
             if (strpos($postParam, 'del_') === 0) {
-                $releaseAction = "removeFromGroup";
                 $list = $this->list;
                 if ($list !== null) {
                     if (strpos($postParam, $list->getListId())) {
@@ -127,11 +126,15 @@ class RelationshipManager extends Plugin
                         $_REQUEST['PID'] = $list->getListId();
                         $list->save_object();
                         $action = $list->getAction();
-                        $this->$releaseAction($list->getData($action['targets'][0])['dn']);
+
+                        $relationship = RelationshipFactory::createRelationhip($this->dn, $list->getData($action['targets'][0])['dn'], $this->config->get_ldap_link());
+                        $relationship->disassociate();
                     }
                 }
             }
         }
+        
+        $this->refreshGroupList();
 
 
         // Load Smarty
@@ -331,34 +334,6 @@ class RelationshipManager extends Plugin
             return $displayData;
         }
         return null;
-    }
-
-    function removeFromGroup(string $dn)
-    {
-        $removeMember = "";
-        $groupMemberName = "";
-
-        $ldap = $this->config->get_ldap_link();
-        $ldap->cat($dn);
-        if ($ldap->count() == 1) {
-            $group = $ldap->fetch();
-            if (isset($group["member"]) && in_array($this->dn, $group['member'])) {
-                $groupMemberName = 'member';
-                $removeMember = $this->dn;
-            }
-            if (isset($group["memberUid"]) && in_array($this->uid, $group['memberUid'])) {
-                $groupMemberName = 'memberUid';
-                $removeMember = $this->uid;
-            }
-
-            $ldap->cd($dn);
-            $ldap->rm([$groupMemberName => $removeMember]);
-            if (!$ldap->success()) {
-                msg_dialog::display(_("LDAP error"), msgPool::ldaperror($ldap->get_error(), $dn, LDAP_MOD, __CLASS__));
-            }
-        }
-
-        $this->refreshGroupList();
     }
 
     function addToGroup($groups)

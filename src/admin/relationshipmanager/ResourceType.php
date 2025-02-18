@@ -27,12 +27,42 @@ enum ResourceType
     case OBJECT_GROUP;
 }
 
+class RelationshipFactory
+{
+    public static function createRelationhip(string $attractor, string $attracted, \ldapMultiplexer $ldap): Relationship
+    {
+        $res = $ldap->cat($attracted, ['dn', 'objectClass']);
+
+        if ($res) {
+            $values = $ldap->fetch($res);
+            foreach ($values['objctClass'] as $objectClass) {
+                if (PosixGroupRelationship::LDAPBASECLASS == $objectClass) {
+                    return new PosixGroupRelationship($attractor, $attracted, $ldap);
+                }
+                if (ObjectGroupRelationship::LDAPBASECLASS == $objectClass) {
+                    return new ObjectGroupRelationship($attractor, $attracted, $ldap);
+                }
+            }
+        }
+
+        return new Divorced();
+    }
+}
+
 abstract class Relationship
 {
+    public const LDAPBASECLASS = '';
     protected ResourceType $resourceType = ResourceType::INVALID;
-    protected string $ldapBaseClass;
     protected \ldapMultiplexer $ldap;
-    protected string $entry;
+    protected string $attracted;
+    protected string $attractor;
+
+    protected function __construct(string $attractor, string $attracted, \ldapMultiplexer $ldap)
+    {
+        $this->attractor = $attractor;
+        $this->attracted = $attracted;
+        $this->ldap = $ldap;
+    }
 
     public function getResourceType(): ResourceType
     {
@@ -46,48 +76,92 @@ abstract class Relationship
     {
         return $this->ldapBaseClass;
     }
-    protected function entryMatchesLdapClass(): bool
+    protected function relationshipIsValid(): bool
     {
-        $res = $this->ldap->cat($this->entry, ['dn', 'objectClass']);
-
-        if ($res) {
-            $values = $this->ldap->fetch($res);
-            if (isset($values['objectClass'])) {
-                if (in_array($this->ldapBaseClass, $values['objctClass'])) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return $this->resourceType !== ResourceType::INVALID;
     }
+    public abstract function disassociate(): void;
 }
 
 class PosixGroupRelationship extends Relationship
 {
-    protected string $ldapBaseClass = 'posixGroup';
+    public const LDAPBASECLASS = 'posixGroup';
+    private string $uid = '';
 
-    public function __construct(string $dn, \ldapMultiplexer $ldap)
+    public function __construct(string $attractor, string $attracted, \ldapMultiplexer $ldap)
     {
-        $this->entry = $dn;
-        $this->ldap = $ldap;
+        parent::__construct($attractor, $attracted, $ldap);
+        $this->setResourceType(ResourceType::POSIX_GROUP);
+        $this->fetchUid();
+    }
 
-        if ($this->entryMatchesLdapClass()) {
-            $this->setResourceType(ResourceType::POSIX_GROUP);
+    private function fetchUid(): void{
+        $this->ldap->cat($this->attractor);
+        if ($this->ldap->count() == 1) {
+            $user = $this->ldap->fetch();
+            $this->uid = $user['uid'][0];
+        }
+    }
+
+    public function disassociate(): void
+    {
+        $this->ldap->cat($this->attracted);
+        if ($this->ldap->count() == 1) {
+            $group = $this->ldap->fetch();
+            if (isset($group["memberUid"]) && in_array($this->attractor, $group['memberUid'])) {
+                $this->ldap->cd($this->attracted);
+                $this->ldap->rm(['memberUid' => $this->uid]);
+                if (!$this->ldap->success()) {
+                    \msg_dialog::display(_("LDAP error"), \msgPool::ldaperror($this->ldap->get_error(), $this->attracted, LDAP_MOD, __CLASS__));
+                }
+            }
         }
     }
 }
 
 class ObjectGroupRelationship extends Relationship
 {
-    protected string $ldapBaseClass = 'gosaGroupOfNames';
+    public const LDAPBASECLASS = 'gosaGroupOfNames';
 
-    public function __construct(string $dn, \ldapMultiplexer $ldap)
+    public function __construct(string $attractor, string $attracted, \ldapMultiplexer $ldap)
     {
-        $this->entry = $dn;
-        $this->ldap = $ldap;
-        if ($this->entryMatchesLdapClass()) {
-            $this->setResourceType(ResourceType::OBJECT_GROUP);
+        parent::__construct($attractor, $attracted, $ldap);
+        $this->setResourceType(ResourceType::OBJECT_GROUP);
+    }
+
+    public function disassociate(): void
+    {
+        $this->ldap->cat($this->attracted);
+        if ($this->ldap->count() == 1) {
+            $group = $this->ldap->fetch();
+            if (isset($group["member"]) && in_array($this->attractor, $group['member'])) {
+                $this->ldap->cd($this->attracted);
+                $this->ldap->rm(['member' => $this->attractor]);
+                if (!$this->ldap->success()) {
+                    \msg_dialog::display(_("LDAP error"), \msgPool::ldaperror($this->ldap->get_error(), $this->attracted, LDAP_MOD, __CLASS__));
+                }
+            }
+            // if (isset($group["memberUid"]) && in_array($this->uid, $group['memberUid'])) {
+            //     $groupMemberName = 'memberUid';
+            //     $removeMember = $this->uid;
+            // }
+
+
         }
+    }
+}
+
+class Divorced extends Relationship
+{
+    public const LDAPBASECLASS = '';
+
+    public function __construct()
+    {
+        $this->setResourceType(ResourceType::INVALID);
+    }
+
+    public function disassociate(): void
+    {
+        return;
     }
 }
