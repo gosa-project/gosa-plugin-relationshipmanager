@@ -214,6 +214,7 @@ class RelationshipManager extends Plugin
         $attrs = ['cn' => _("Name"), 'description' => _("Description")];
 
         $list = new sortableListing();
+        $list->setReorderable(true);
         $list->setDeleteable(true);
         $list->setEditable(false);
         $list->setWidth("100%");
