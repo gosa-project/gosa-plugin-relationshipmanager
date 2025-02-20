@@ -27,28 +27,6 @@ enum ResourceType
     case OBJECT_GROUP;
 }
 
-class RelationshipFactory
-{
-    public static function createRelationhip(string $attractor, string $attracted, \ldapMultiplexer $ldap): Relationship
-    {
-        $res = $ldap->cat($attracted, ['dn', 'objectClass']);
-
-        if ($res) {
-            $values = $ldap->fetch($res);
-            foreach ($values['objctClass'] as $objectClass) {
-                if (PosixGroupRelationship::LDAPBASECLASS == $objectClass) {
-                    return new PosixGroupRelationship($attractor, $attracted, $ldap);
-                }
-                if (ObjectGroupRelationship::LDAPBASECLASS == $objectClass) {
-                    return new ObjectGroupRelationship($attractor, $attracted, $ldap);
-                }
-            }
-        }
-
-        return new Divorced();
-    }
-}
-
 abstract class Relationship
 {
     public const LDAPBASECLASS = '';
@@ -74,7 +52,7 @@ abstract class Relationship
     }
     public function getLdapBaseClass(): string
     {
-        return $this->ldapBaseClass;
+        return self::LDAPBASECLASS;
     }
     protected function relationshipIsValid(): bool
     {
