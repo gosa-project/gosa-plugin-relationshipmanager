@@ -28,6 +28,7 @@ use \sortableListing as sortableListing;
 use \LDAP as LDAP;
 use \session as session;
 use \GosaRelationshipManager\admin\relationshipmanager\groupRelationshipSelect\GroupRelationshipSelect as GroupRelationshipSelect;
+use \GosaRelationshipManager\admin\relationshipmanager\RelationshipFactory as RelationshipFactory;
 
 class RelationshipManager extends Plugin
 {
@@ -129,7 +130,7 @@ class RelationshipManager extends Plugin
 
                         $relationship = RelationshipFactory::createRelationhip($this->dn, $list->getData($action['targets'][0])['dn'], $this->config->get_ldap_link());
 
-                        \msg_dialog::display("Are you sure?", "Delete: " . $relationship->relationInfo(), \msg_dialog::CONFIRM_DIALOG);
+                        \msg_dialog::display("Are you sure?", "Delete: " . $relationship->relationInfo(), CONFIRM_DIALOG);
                         //$relationship->disassociate();
                     }
                 }
