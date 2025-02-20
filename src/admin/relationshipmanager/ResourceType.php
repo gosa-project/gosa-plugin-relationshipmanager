@@ -81,6 +81,7 @@ abstract class Relationship
         return $this->resourceType !== ResourceType::INVALID;
     }
     public abstract function disassociate(): void;
+    public abstract function relationInfo(): string;
 }
 
 class PosixGroupRelationship extends Relationship
@@ -117,6 +118,11 @@ class PosixGroupRelationship extends Relationship
             }
         }
     }
+
+    public function relationInfo(): string
+    {
+        return sprintf(_("Relation between %s and %s"), [$this->uid, $this->attracted]);
+    }
 }
 
 class ObjectGroupRelationship extends Relationship
@@ -143,6 +149,11 @@ class ObjectGroupRelationship extends Relationship
             }
         }
     }
+
+    public function relationInfo(): string
+    {
+        return sprintf(_("Relation between %s and %s"), [$this->attractor, $this->attracted]);
+    }
 }
 
 class Divorced extends Relationship
@@ -157,5 +168,10 @@ class Divorced extends Relationship
     public function disassociate(): void
     {
         return;
+    }
+
+    public function relationInfo(): string
+    {
+        return "";
     }
 }

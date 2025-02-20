@@ -128,7 +128,9 @@ class RelationshipManager extends Plugin
                         $action = $list->getAction();
 
                         $relationship = RelationshipFactory::createRelationhip($this->dn, $list->getData($action['targets'][0])['dn'], $this->config->get_ldap_link());
-                        $relationship->disassociate();
+
+                        \msg_dialog::display("Are you sure?", "Delete: " . $relationship->relationInfo(), \msg_dialog::CONFIRM_DIALOG);
+                        //$relationship->disassociate();
                     }
                 }
             }
