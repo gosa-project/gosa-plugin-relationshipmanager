@@ -29,6 +29,6 @@ class ObjectGroupRelationship extends Relationship
 
     public function relationInfo(): string
     {
-        return sprintf(_("Relation between %s and %s"), [$this->attractor, $this->attracted]);
+        return sprintf(_("Relation between %s and %s"), $this->attractor, $this->attracted);
     }
 }
