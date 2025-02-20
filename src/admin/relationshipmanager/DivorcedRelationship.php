@@ -2,7 +2,7 @@
 
 namespace GosaRelationshipManager\admin\relationshipmanager;
 
-class Divorced extends Relationship
+class DivorcedRelationship extends Relationship
 {
     public const LDAPBASECLASS = '';
 
