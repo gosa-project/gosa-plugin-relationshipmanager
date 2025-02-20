@@ -141,12 +141,6 @@ class ObjectGroupRelationship extends Relationship
                     \msg_dialog::display(_("LDAP error"), \msgPool::ldaperror($this->ldap->get_error(), $this->attracted, LDAP_MOD, __CLASS__));
                 }
             }
-            // if (isset($group["memberUid"]) && in_array($this->uid, $group['memberUid'])) {
-            //     $groupMemberName = 'memberUid';
-            //     $removeMember = $this->uid;
-            // }
-
-
         }
     }
 }
