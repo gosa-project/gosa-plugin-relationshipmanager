@@ -41,6 +41,6 @@ class RelationshipFactory
             }
         }
 
-        return new Divorced();
+        return new DivorcedRelationship();
     }
 }
