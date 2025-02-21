@@ -63,6 +63,7 @@ class RelationshipManager extends Plugin
 
         // Remember account status
         $this->initially_was_account = $this->is_account;
+        $this->list = new sortableListing();
     }
 
     function execute()
@@ -136,7 +137,7 @@ class RelationshipManager extends Plugin
                 }
             }
         }
-        
+
         $this->refreshGroupList();
 
 
@@ -213,15 +214,14 @@ class RelationshipManager extends Plugin
         $msg = _("Relationship Manager");
         $attrs = ['cn' => _("Name"), 'description' => _("Description")];
 
-        $list = new sortableListing();
-        $list->setReorderable(true);
-        $list->setDeleteable(true);
-        $list->setEditable(false);
-        $list->setWidth("100%");
-        $list->setHeight("80px");
-        $list->setHeader(array_values(array_merge($attrs, [_("Type")])));
-        $list->setDefaultSortColumn(0);
-        $list->setAcl('rwcdm');
+        $this->list->setReorderable(true);
+        $this->list->setDeleteable(true);
+        $this->list->setEditable(false);
+        $this->list->setWidth("100%");
+        $this->list->setHeight("80px");
+        $this->list->setHeader(array_values(array_merge($attrs, [_("Type")])));
+        $this->list->setDefaultSortColumn(0);
+        $this->list->setAcl('rwcdm');
 
         $data = [];
         $displayData = [];
@@ -272,13 +272,12 @@ class RelationshipManager extends Plugin
             }
         }
 
-        $list->setListData($data, $displayData);
-        $list->update();
+        $this->list->setListData($data, $displayData);
+        $this->list->update();
         $str .= "<h2>" . $msg . "</h2><div class='row'><div class='col s12'>";
-        $str .= $list->render();
+        $str .= $this->list->render();
         $str .= "</div></div>";
         $str .= "<br>";
-        $this->list = $list;
         $this->listData = $data;
         $this->objectList = $str;
     }
