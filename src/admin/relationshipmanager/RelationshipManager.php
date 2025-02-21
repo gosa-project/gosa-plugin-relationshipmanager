@@ -214,7 +214,7 @@ class RelationshipManager extends Plugin
         $msg = _("Relationship Manager");
         $attrs = ['cn' => _("Name"), 'description' => _("Description")];
 
-        $this->list->setReorderable(true);
+        $this->list->setReorderable(false);
         $this->list->setSortingEnabled(true);
         $this->list->setDeleteable(true);
         $this->list->setEditable(false);
