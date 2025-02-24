@@ -165,7 +165,7 @@ class RelationshipManager extends Plugin
         $smarty->assign('posixGroups', $this->getAllPosixGroups());
         $smarty->assign('objectGroups', $this->getAllObjectGroups());
 
-        return ($smarty->fetch(get_template_path('GroupList.tpl', true, dirname(__FILE__))));
+        return ($smarty->fetch(get_template_path('GroupList.tpl', true, dirname(__FILE__) . '/ihtml/themes')));
     }
 
     function save()
