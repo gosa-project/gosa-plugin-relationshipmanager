@@ -24,7 +24,8 @@ use \plugin as Plugin;
 use \msgPool as msgPool;
 use \log as log;
 use \msg_dialog as msg_dialog;
-use \sortableListing as sortableListing;
+use \listing as listing;
+use \filter as filter;
 use \LDAP as LDAP;
 use \session as session;
 use \GosaRelationshipManager\admin\relationshipmanager\groupRelationshipSelect\GroupRelationshipSelect as GroupRelationshipSelect;
@@ -42,13 +43,15 @@ class RelationshipManager extends Plugin
     public $view_logged = false;
     public $uid = "";
     public $groupRelationSelect;
-    public sortableListing $list;
+    public listing $list;
+    public filter $filter;
     public $listData;
     public $initTime;
     public $plugin;
     public $addToPosixGroups = [];
     public $addToObjectgroups = [];
     public ResourceType $currentResourceType;
+    public $storage = [];
 
     // attribute list for save action
     public $objectClasses = ["gosaGroupOfNames", "posixGroup"];
@@ -61,9 +64,14 @@ class RelationshipManager extends Plugin
         $this->initTime = microtime(true);
         $this->uid = $this->attrs['uid'][0];
 
+        $this->storage = [get_ou("core", "groupRDN")];
+
         // Remember account status
         $this->initially_was_account = $this->is_account;
-        $this->list = new sortableListing();
+        $this->list = new listing(__DIR__ . "/themes/default/RelatedList.xml");
+        $this->filter = new RelationshipFilter(__DIR__ . "/themes/default/RelatedListFilter.xml", ['%DN' => $dn, '%UID' => $this->uid]);
+        $this->filter->setObjectStorage($this->storage);
+        $this->list->setFilter($this->filter);
     }
 
     function execute()
@@ -109,11 +117,6 @@ class RelationshipManager extends Plugin
                 $this->is_modified = true;
             }
             $this->groupRelationSelect = null;
-            $this->refreshGroupList();
-        }
-
-        if (empty($this->list)) {
-            $this->refreshGroupList();
         }
 
         foreach (array_keys($_POST) as $postParam) {
@@ -138,9 +141,6 @@ class RelationshipManager extends Plugin
             }
         }
 
-        $this->refreshGroupList();
-
-
         // Load Smarty
         $smarty = get_smarty();
 
@@ -160,7 +160,8 @@ class RelationshipManager extends Plugin
         }
 
         // Assign values
-        $smarty->assign('objectList', $this->objectList);
+        $this->list->update();
+        $smarty->assign('objectList', $this->list->render());
         $smarty->assign('posixGroups', $this->getAllPosixGroups());
         $smarty->assign('objectGroups', $this->getAllObjectGroups());
 
@@ -204,83 +205,6 @@ class RelationshipManager extends Plugin
 
             $this->addToPosixGroups = null;
         }
-    }
-
-    /**
-     * Updates the list of groups in which the current user is a member. 
-     */
-    function refreshGroupList()
-    {
-        $msg = _("Relationship Manager");
-        $attrs = ['cn' => _("Name"), 'description' => _("Description")];
-
-        $this->list->setReorderable(false);
-        $this->list->setSortingEnabled(true);
-        $this->list->setDeleteable(true);
-        $this->list->setEditable(false);
-        $this->list->setWidth("100%");
-        $this->list->setHeight("80px");
-        $this->list->setHeader(array_values(array_merge($attrs, [_("Type")])));
-        $this->list->setDefaultSortColumn(0);
-        $this->list->setAcl('rwcdm');
-
-        $data = [];
-        $displayData = [];
-
-        foreach ($this->objectClasses as $key => $objectClass) {
-            $ldap = $this->config->get_ldap_link();
-            $ldap->cd($this->config->current['BASE']);
-            $str = "";
-            $type = "";
-
-            if ($objectClass == 'gosaGroupOfNames') {
-                $ldap->search(
-                    "(&(objectClass=$objectClass)(member=" . LDAP::escapeValue($this->dn) . "))",
-                    array_merge(array_keys($attrs), ['dn'])
-                );
-                $type = _("Objectgroup");
-            } elseif ($objectClass == 'posixGroup') {
-                $ldap->search(
-                    "(&(objectClass=$objectClass)(memberUid=" . LDAP::escapeValue($this->uid) . "))",
-                    array_merge(array_keys($attrs), ['dn'])
-                );
-                $type = _("Posix group");
-            }
-
-            foreach ($this->addToObjectgroups as $key => $value) {
-            }
-
-            foreach ($this->addToPosixGroups as $key => $value) {
-            }
-
-            if (!$ldap->success()) {
-                msg_dialog::display(_("LDAP error"), msgPool::ldaperror($ldap->get_error(), $this->dn, LDAP_SEARCH, __CLASS__));
-            } elseif ($ldap->count()) {
-                while ($result = $ldap->fetch()) {
-                    $entry = array();
-                    foreach ($attrs as $name => $desc) {
-                        $value = "";
-                        if (isset($result[$name][0])) $value = $result[$name][0];
-                        $entry['data'][] = $value;
-                    }
-                    $entry = array_filter($entry);
-
-                    array_push($entry['data'], $type);
-                    $displayData[] = $entry;
-                    $entry['dn'] = $result['dn'];
-                    $data[] = $entry;
-                }
-            }
-        }
-
-        $this->list->setListData($data, $displayData);
-        $this->list->update();
-        $str .= "<h2>" . $msg . "</h2><div class='row'><div class='col s12'>";
-        $str .= $this->list->render();
-        $str .= "</div></div>";
-        $str .= "<br>";
-        $this->listData = $data;
-        $this->objectList = $str;
     }
 
     function getAllPosixGroups()

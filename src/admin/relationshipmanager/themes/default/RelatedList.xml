@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<list>
+  <definition>
+    <departmentBrowser>false</departmentBrowser>
+    <departmentRootVisible>false</departmentRootVisible>
+    <baseMode>false</baseMode>
+    <multiSelect>true</multiSelect>
+    <template>themes/default/list-select.tpl</template>
+    <label>Please select the desired entries</label>
+    <defaultSortColumn>1</defaultSortColumn>
+
+    <objectType>
+      <label>Relation</label>
+      <objectClass>posixGroup</objectClass>
+      <category>groups</category>
+      <class>group</class>
+    </objectType>
+
+  </definition>
+
+  <table>
+    <layout>|20px;c|||</layout>
+
+    <column>
+      <value>%{filter:objectType(dn,objectClass)}</value>
+    </column>
+
+    <column>
+      <label>Common name</label>
+      <sortAttribute>cn</sortAttribute>
+      <sortType>string</sortType>
+      <value>%{cn}</value>
+      <export>false</export>
+    </column>
+
+    <column>
+      <label>description</label>
+      <sortAttribute>description</sortAttribute>
+      <sortType>string</sortType>
+      <value>%{description}</value>
+      <export>false</export>
+    </column>
+
+    <column>
+      <label>description</label>
+      <sortAttribute>description</sortAttribute>
+      <sortType>string</sortType>
+      <value>%{description}</value>
+      <export>false</export>
+    </column>
+
+  </table>
+
+  <actionmenu>
+  </actionmenu>
+
+  <actiontriggers snapshot="false" copypaste="false">
+  </actiontriggers>
+
+</list>
