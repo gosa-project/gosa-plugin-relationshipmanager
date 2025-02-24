@@ -1,4 +1,4 @@
-<div class="list-head-wrapper">
+<div class="mainlist-header">
   <h2>{$HEADLINE}&nbsp;{$SIZELIMIT}</h2>
   <input type="hidden" name="ignore">
   <div class="control-panel">
