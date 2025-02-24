@@ -45,10 +45,9 @@ class RelationshipFilter extends filter
     private function processPredefinedParameter(string $filter): string
     {
         foreach ($this->predefinedParameter as $parameter => $value) {
-            $filter = preg_replace('/%' . $parameter . '/', $parameter, $value);
+            $filter = preg_replace('/%' . $parameter . '/', $value, $filter);
         }
 
-        var_dump($filter);
         return $filter;
     }
 

@@ -17,7 +17,7 @@
     <label>Default filter</label>
     <query>
       <backend>LDAP</backend>
-      <filter>(|(&amp;(objectClass=posixGroup)(uid=%UID))(&amp;(objectClass=gosaGroupOfNames)(member=%DN)))</filter>
+      <filter>(|(&amp;(objectClass=posixGroup)(memberUid=%UID))(&amp;(objectClass=gosaGroupOfNames)(member=%DN)))</filter>
     </query>
   </search>
 

@@ -69,7 +69,7 @@ class RelationshipManager extends Plugin
         // Remember account status
         $this->initially_was_account = $this->is_account;
         $this->list = new listing(__DIR__ . "/themes/default/RelatedList.xml");
-        $this->filter = new RelationshipFilter(__DIR__ . "/themes/default/RelatedListFilter.xml", ['%DN' => $dn, '%UID' => $this->uid]);
+        $this->filter = new RelationshipFilter(__DIR__ . "/themes/default/RelatedListFilter.xml", ['DN' => $dn, 'UID' => $this->uid]);
         $this->filter->setObjectStorage($this->storage);
         $this->list->setFilter($this->filter);
     }
