@@ -45,7 +45,7 @@ class RelationshipManager extends Plugin
     public $groupRelationSelect;
     public listing $list;
     public filter $filter;
-    public $listData;
+    public $listData = [];
     public $initTime;
     public $plugin;
     public $addToPosixGroups = [];
@@ -57,7 +57,7 @@ class RelationshipManager extends Plugin
     public $objectClasses = ["gosaGroupOfNames", "posixGroup"];
     public $objectList = [];
 
-    function __construct(&$config, $dn = null, $parent = null)
+    function __construct($config, $dn = null, $parent = null)
     {
         parent::__construct($config, $dn, $parent);
 
@@ -76,6 +76,7 @@ class RelationshipManager extends Plugin
 
     function execute()
     {
+        global $config;
         parent::execute();
 
         // Log view
@@ -87,13 +88,13 @@ class RelationshipManager extends Plugin
         // Display dialog to allow selection of groups
         if (isset($_POST['edit_posixgroupmembership'])) {
             $this->currentResourceType = ResourceType::POSIX_GROUP;
-            $this->groupRelationSelect = new GroupRelationshipSelect($this->config, get_userinfo(), $this->currentResourceType, $this->uid);
+            $this->groupRelationSelect = new GroupRelationshipSelect($config, get_userinfo(), $this->currentResourceType, $this->uid);
         }
 
         // Display dialog to allow selection of groups
         if (isset($_POST['edit_objectgroupmembership'])) {
             $this->currentResourceType = ResourceType::OBJECT_GROUP;
-            $this->groupRelationSelect = new GroupRelationshipSelect($this->config, get_userinfo(), $this->currentResourceType, $this->dn);
+            $this->groupRelationSelect = new GroupRelationshipSelect($config, get_userinfo(), $this->currentResourceType, $this->dn);
         }
 
         // Cancel group dialog
@@ -121,18 +122,17 @@ class RelationshipManager extends Plugin
 
         foreach (array_keys($_POST) as $postParam) {
             if (strpos($postParam, 'del_') === 0) {
-                $list = $this->list;
-                if ($list !== null) {
-                    if (strpos($postParam, $list->getListId())) {
+                if ($this->list !== null) {
+                    if (strpos($postParam, $this->list->getListId())) {
                         // ATTENTION: WORKAROUND
                         // sortableListing is checking $_REQUEST['PID'] for being the active one
                         // but having more than one listing on one page will set the PID value
                         // to the latest sortableListing object that is displayed.
-                        $_REQUEST['PID'] = $list->getListId();
-                        $list->save_object();
-                        $action = $list->getAction();
+                        $_REQUEST['PID'] = $this->list->getListId();
+                        $this->list->save_object();
+                        $action = $this->list->getAction();
 
-                        $relationship = RelationshipFactory::createRelationhip($this->dn, $list->getData($action['targets'][0])['dn'], $this->config->get_ldap_link());
+                        $relationship = RelationshipFactory::createRelationhip($this->dn, $this->list->getData($action['targets'][0])['dn'], $config->get_ldap_link());
 
                         \msg_dialog::display("Are you sure?", "Delete: " . $relationship->relationInfo(), CONFIRM_DIALOG);
                         //$relationship->disassociate();
@@ -147,10 +147,7 @@ class RelationshipManager extends Plugin
         // Render group select template if set.
         if ($this->groupRelationSelect) {
             $this->dialog = true;
-
-            // Build up blocklist
-            session::set('filterBlacklist', array('dn' => array_keys($this->listData)));
-            return ($this->groupRelationSelect->execute());
+            return $this->groupRelationSelect->execute();
         }
 
         // Assign acls
@@ -165,12 +162,13 @@ class RelationshipManager extends Plugin
         $smarty->assign('posixGroups', $this->getAllPosixGroups());
         $smarty->assign('objectGroups', $this->getAllObjectGroups());
 
-        return ($smarty->fetch(get_template_path('GroupList.tpl', true, dirname(__FILE__) . '/themes')));
+        return $smarty->fetch(get_template_path('GroupList.tpl', true, dirname(__FILE__) . '/themes'));
     }
 
     function save()
     {
-        $ldap = $this->config->get_ldap_link();
+        global $config;
+        $ldap = $config->get_ldap_link();
 
         parent::save();
 
@@ -221,7 +219,7 @@ class RelationshipManager extends Plugin
             $data = [];
             $displayData = [];
             while ($result = $ldap->fetch()) {
-                $entry = array();
+                $entry = [];
                 foreach ($attrs as $name => $desc) {
                     $value = "";
                     if (isset($result[$name][0])) $value = $result[$name][0];
@@ -249,7 +247,7 @@ class RelationshipManager extends Plugin
             $data = [];
             $displayData = [];
             while ($result = $ldap->fetch()) {
-                $entry = array();
+                $entry = [];
                 foreach ($attrs as $name => $desc) {
                     $value = "";
                     if (isset($result[$name][0])) $value = $result[$name][0];
@@ -266,8 +264,9 @@ class RelationshipManager extends Plugin
 
     function addToGroup($groups)
     {
+        global $config;
         /* include global link_info */
-        $ldap = $this->config->get_ldap_link();
+        $ldap = $config->get_ldap_link();
 
         /* Walk through groups and add the descriptive entry if not exists */
         foreach ($groups as $value) {
@@ -281,7 +280,7 @@ class RelationshipManager extends Plugin
             "plShortName"   => _('Relationship manager'),
             "plDescription" => _('Manage user relationship'),
             "plSelfModify"  => false,
-            "plDepends"     => array(),
+            "plDepends"     => [],
             "plPriority"    => 1,
             "plSection"     => array("admin"),
             "plCategory"    => array("groupmembership" => array("description" => _("Manage user relationship"))),
