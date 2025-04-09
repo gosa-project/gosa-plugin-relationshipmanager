@@ -11,9 +11,4 @@
   <div class="plus-actions">
     {$LIST}
   </div>
-
-  <div class="card-action">
-      <button class="btn-small primary" type="submit" name="ok-save">{msgPool type=okButton}</button>
-      <button class="btn-small primary" type="submit" name="cancel-abort">{msgPool type=cancelButton}</button>
-  </div>
 </div>

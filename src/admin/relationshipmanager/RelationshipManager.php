@@ -27,7 +27,6 @@ use \msg_dialog as msg_dialog;
 use \listing as listing;
 use \filter as filter;
 use \LDAP as LDAP;
-use \session as session;
 use \GosaRelationshipManager\admin\relationshipmanager\groupRelationshipSelect\GroupRelationshipSelect as GroupRelationshipSelect;
 use \GosaRelationshipManager\admin\relationshipmanager\RelationshipFactory as RelationshipFactory;
 
@@ -72,6 +71,7 @@ class RelationshipManager extends Plugin
         $this->filter = new RelationshipFilter(__DIR__ . "/themes/default/RelatedListFilter.xml", ['DN' => $dn, 'UID' => $this->uid]);
         $this->filter->setObjectStorage($this->storage);
         $this->list->setFilter($this->filter);
+        $this->list->showFooter = false;
     }
 
     function execute()
@@ -134,7 +134,7 @@ class RelationshipManager extends Plugin
 
                         $relationship = RelationshipFactory::createRelationhip($this->dn, $this->list->getData($action['targets'][0])['dn'], $config->get_ldap_link());
 
-                        \msg_dialog::display("Are you sure?", "Delete: " . $relationship->relationInfo(), CONFIRM_DIALOG);
+                        msg_dialog::display("Are you sure?", "Delete: " . $relationship->relationInfo(), CONFIRM_DIALOG);
                         //$relationship->disassociate();
                     }
                 }
