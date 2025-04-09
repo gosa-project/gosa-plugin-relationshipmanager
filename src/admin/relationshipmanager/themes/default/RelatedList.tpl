@@ -8,7 +8,7 @@
 </div>
 
 <div class="list-content-wrapper">
-  <div class="plus-actions">
+  <div class="plus-actions relationshipmanager">
     {$LIST}
   </div>
 </div>
