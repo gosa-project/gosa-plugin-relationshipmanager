@@ -46,7 +46,6 @@ class RelationshipManager extends Plugin
     public filter $filter;
     public $listData = [];
     public $initTime;
-    public $plugin;
     public $addToPosixGroups = [];
     public $addToObjectgroups = [];
     public ResourceType $currentResourceType;
@@ -98,12 +97,12 @@ class RelationshipManager extends Plugin
         }
 
         // Cancel group dialog
-        if (isset($_POST['add_groups_cancel']) || isset($_POST['cancel-abort'])) {
+        if (isset($_POST['cancel-abort'])) {
             $this->groupRelationSelect = null;
         }
 
         // Add groups selected in groupSelect dialog to ours.
-        if ((isset($_POST['add_groups_finish']) || isset($_POST['ok-save'])) && $this->groupRelationSelect) {
+        if (isset($_POST['ok-save']) && $this->groupRelationSelect) {
             $groups = $this->groupRelationSelect->detectPostActions();
             if (isset($groups['targets'])) {
                 switch ($this->currentResourceType) {

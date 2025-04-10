@@ -42,14 +42,6 @@
       <export>false</export>
     </column>
 
-    <column>
-      <label>description</label>
-      <sortAttribute>description</sortAttribute>
-      <sortType>string</sortType>
-      <value>%{description}</value>
-      <export>false</export>
-    </column>
-
   </table>
 
   <actionmenu>
