@@ -147,6 +147,8 @@ class RelationshipManager extends Plugin
         if ($this->groupRelationSelect) {
             $this->dialog = true;
             return $this->groupRelationSelect->execute();
+        } else {
+            $this->dialog = false;
         }
 
         // Assign acls
