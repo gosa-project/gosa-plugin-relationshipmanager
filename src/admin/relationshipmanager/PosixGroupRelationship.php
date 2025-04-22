@@ -28,7 +28,8 @@ class PosixGroupRelationship extends Relationship
         $this->ldap->cat($this->attracted);
         if ($this->ldap->count() == 1) {
             $group = $this->ldap->fetch();
-            if (isset($group["memberUid"]) && in_array($this->attractor, $group['memberUid'])) {
+
+            if (isset($group["memberUid"]) && in_array($this->uid, $group['memberUid'])) {
                 $this->ldap->cd($this->attracted);
                 $this->ldap->rm(['memberUid' => $this->uid]);
                 if (!$this->ldap->success()) {
