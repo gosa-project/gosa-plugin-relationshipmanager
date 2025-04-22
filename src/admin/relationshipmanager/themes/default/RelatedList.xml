@@ -20,7 +20,7 @@
   </definition>
 
   <table>
-    <layout>|20px;c|||</layout>
+    <layout>|20px;c|||185px;r|</layout>
 
     <column>
       <value>%{filter:objectType(dn,objectClass)}</value>
@@ -42,12 +42,29 @@
       <export>false</export>
     </column>
 
+    <column>
+      <label>Actions</label>
+      <value>%{filter:actions(dn,row,objectClass)}</value>
+    </column>
+
   </table>
 
   <actionmenu>
+    <action>
+      <name>delete</name>
+      <type>entry</type>
+      <image>delete</image>
+      <label>Delete relationship</label>
+    </action>
   </actionmenu>
 
   <actiontriggers snapshot="false" copypaste="false">
+    <action>
+      <name>delete</name>
+      <type>entry</type>
+      <image>delete</image>
+      <label>Delete relationship</label>
+    </action>
   </actiontriggers>
 
 </list>
