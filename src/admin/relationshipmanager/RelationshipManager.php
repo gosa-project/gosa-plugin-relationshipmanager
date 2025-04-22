@@ -102,21 +102,38 @@ class RelationshipManager extends Plugin
         }
 
         // Add groups selected in groupSelect dialog to ours.
-        if (isset($_POST['ok-save']) && $this->groupRelationSelect) {
-            $groups = $this->groupRelationSelect->detectPostActions();
-            if (isset($groups['targets'])) {
-                switch ($this->currentResourceType) {
-                    case ResourceType::POSIX_GROUP:
-                        $this->addToPosixGroups = $groups['targent'];
-                        break;
+        // if (isset($_POST['ok-save']) && $this->groupRelationSelect) {
+        //     $groups = $this->groupRelationSelect->detectPostActions();
+        //     var_dump($groups);
+        //     if (isset($groups['targets'])) {
+        //         switch ($this->currentResourceType) {
+        //             case ResourceType::POSIX_GROUP:
+        //                 $this->addToPosixGroups = $groups['targent'];
+        //                 break;
 
-                    case ResourceType::OBJECT_GROUP:
-                        $this->addToObjectgroups = $groups['targent'];
-                        break;
+        //             case ResourceType::OBJECT_GROUP:
+        //                 $this->addToObjectgroups = $groups['targent'];
+        //                 break;
+        //         }
+        //         $this->is_modified = true;
+        //     }
+        //     $this->groupRelationSelect = null;
+        // }
+
+        // get action from our plugins list
+        if ($this->list->getAction() !== null) {
+            $tAction = $this->list->getAction();
+            // for now we just use the delete action
+            if ($tAction['action'] === 'delete') {
+                $relationships = [];
+                foreach ($tAction['targets'] as $group) {
+                    $relationships[] = RelationshipFactory::createRelationhip($this->dn, $group, $config->get_ldap_link());
                 }
-                $this->is_modified = true;
+
+                foreach($relationships as $relationship) {
+                    $relationship->disassociate();
+                }
             }
-            $this->groupRelationSelect = null;
         }
 
         foreach (array_keys($_POST) as $postParam) {
