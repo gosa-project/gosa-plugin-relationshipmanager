@@ -32,10 +32,10 @@ class RelationshipFactory
         if ($res) {
             $values = $ldap->fetch($res);
             foreach ($values['objectClass'] as $objectClass) {
-                if (PosixGroupRelationship::LDAPBASECLASS == $objectClass) {
+                if (PosixGroupRelationship::LDAPBASECLASS === $objectClass) {
                     return new PosixGroupRelationship($attractor, $attracted, $ldap);
                 }
-                if (ObjectGroupRelationship::LDAPBASECLASS == $objectClass) {
+                if (ObjectGroupRelationship::LDAPBASECLASS === $objectClass) {
                     return new ObjectGroupRelationship($attractor, $attracted, $ldap);
                 }
             }
