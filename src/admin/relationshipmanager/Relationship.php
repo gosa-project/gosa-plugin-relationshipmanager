@@ -33,6 +33,8 @@ abstract class Relationship
     {
         return $this->resourceType !== ResourceType::INVALID;
     }
+
+    public abstract function associate(): void;
     public abstract function disassociate(): void;
     public abstract function relationInfo(): string;
 }

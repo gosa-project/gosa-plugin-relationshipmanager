@@ -102,23 +102,22 @@ class RelationshipManager extends Plugin
         }
 
         // Add groups selected in groupSelect dialog to ours.
-        // if (isset($_POST['ok-save']) && $this->groupRelationSelect) {
-        //     $groups = $this->groupRelationSelect->detectPostActions();
-        //     var_dump($groups);
-        //     if (isset($groups['targets'])) {
-        //         switch ($this->currentResourceType) {
-        //             case ResourceType::POSIX_GROUP:
-        //                 $this->addToPosixGroups = $groups['targent'];
-        //                 break;
+        if (isset($_POST['ok-save']) && $this->groupRelationSelect) {
+            $groups = $this->groupRelationSelect->detectPostActions();
+            if (isset($groups['targets'])) {
+                switch ($this->currentResourceType) {
+                    case ResourceType::POSIX_GROUP:
+                        $this->addToPosixGroups = $groups['targets'];
+                        break;
 
-        //             case ResourceType::OBJECT_GROUP:
-        //                 $this->addToObjectgroups = $groups['targent'];
-        //                 break;
-        //         }
-        //         $this->is_modified = true;
-        //     }
-        //     $this->groupRelationSelect = null;
-        // }
+                    case ResourceType::OBJECT_GROUP:
+                        $this->addToObjectgroups = $groups['targets'];
+                        break;
+                }
+                $this->is_modified = true;
+            }
+            $this->groupRelationSelect = null;
+        }
 
         // get action from our plugins list
         if ($this->list->getAction() !== null) {
@@ -132,27 +131,6 @@ class RelationshipManager extends Plugin
 
                 foreach ($relationships as $relationship) {
                     $relationship->disassociate();
-                }
-            }
-        }
-
-        foreach (array_keys($_POST) as $postParam) {
-            if (strpos($postParam, 'del_') === 0) {
-                if ($this->list !== null) {
-                    if (strpos($postParam, $this->list->getListId())) {
-                        // ATTENTION: WORKAROUND
-                        // sortableListing is checking $_REQUEST['PID'] for being the active one
-                        // but having more than one listing on one page will set the PID value
-                        // to the latest sortableListing object that is displayed.
-                        $_REQUEST['PID'] = $this->list->getListId();
-                        $this->list->save_object();
-                        $action = $this->list->getAction();
-
-                        $relationship = RelationshipFactory::createRelationhip($this->dn, $this->list->getData($action['targets'][0])['dn'], $config->get_ldap_link());
-
-                        msg_dialog::display('Are you sure?', 'Delete: ' . $relationship->relationInfo(), CONFIRM_DIALOG);
-                        //$relationship->disassociate();
-                    }
                 }
             }
         }
@@ -190,37 +168,19 @@ class RelationshipManager extends Plugin
 
         parent::save();
 
-        if (isset($this->addToObjectgroups)) {
-            $attrs = ['member' => $this->dn];
-
-            foreach ($this->addToObjectgroups as $groupDN) {
-                $ldap->cd($groupDN);
-                $ldap->modify($attrs);
-                if (!$ldap->success()) {
-                    msg_dialog::display(_('LDAP error'), msgPool::ldaperror($ldap->get_error(), $groupDN, LDAP_MOD, __CLASS__));
-                } else {
-                    new log('modify', 'groups/' . get_class($this), $groupDN, array_keys($attrs), $ldap->get_error());
-                }
-            }
-
-            $this->addToObjectgroups = null;
+        foreach ($this->addToObjectgroups as $groupDN) {
+            $tObjectRelationship = new ObjectGroupRelationship($this->dn, $groupDN, $ldap);
+            $tObjectRelationship->associate();
         }
 
-        if (isset($this->addToPosixGroups)) {
-            $attrs = ['memberUid' => $this->uid];
+        $this->addToObjectgroups = [];
 
-            foreach ($this->addToPosixGroups as $groupDN) {
-                $ldap->cd($groupDN);
-                $ldap->modify($attrs);
-                if (!$ldap->success()) {
-                    msg_dialog::display(_('LDAP error'), msgPool::ldaperror($ldap->get_error(), $groupDN, LDAP_MOD, __CLASS__));
-                } else {
-                    new log('modify', 'groups/' . get_class($this), $groupDN, array_keys($attrs), $ldap->get_error());
-                }
-            }
-
-            $this->addToPosixGroups = null;
+        foreach ($this->addToPosixGroups as $groupDN) {
+            $tPosixRelationship = new PosixGroupRelationship($this->dn, $groupDN, $ldap);
+            $tPosixRelationship->associate();
         }
+
+        $this->addToPosixGroups = [];
     }
 
     function getAllPosixGroups()

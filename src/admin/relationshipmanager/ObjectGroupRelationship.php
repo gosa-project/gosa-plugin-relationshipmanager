@@ -12,6 +12,23 @@ class ObjectGroupRelationship extends Relationship
         $this->setResourceType(ResourceType::OBJECT_GROUP);
     }
 
+    public function associate(): void {
+        $this->ldap->cat($this->attracted);
+        if ($this->ldap->count() == 1) {
+            $group = $this->ldap->fetch();
+            if (!isset($group['member']) || !in_array($this->attractor, $group['member'])) {
+                $tCurrentMember = $group['member'] ?? [];
+                unset($tCurrentMember['count']);
+                $tCurrentMember[] = $this->attractor;
+                $this->ldap->cd($this->attracted);
+                $this->ldap->modify(['member' => $tCurrentMember]);
+                if (!$this->ldap->success()) {
+                    \msg_dialog::display(_('LDAP error'), \msgPool::ldaperror($this->ldap->get_error(), $this->attracted, LDAP_MOD, __CLASS__));
+                }
+            }
+        }
+    }
+
     public function disassociate(): void
     {
         $this->ldap->cat($this->attracted);

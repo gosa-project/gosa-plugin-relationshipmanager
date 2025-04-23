@@ -23,6 +23,24 @@ class PosixGroupRelationship extends Relationship
         }
     }
 
+    public function associate(): void
+    {
+        $this->ldap->cat($this->attracted, ['memberUid']);
+        if ($this->ldap->count() == 1) {
+            $group = $this->ldap->fetch();
+            if (!isset($group['memberUid']) || !in_array($this->attractor, $group['memberUid'])) {
+                $tCurrentMember = $group['memberUid'] ?? [];
+                unset($tCurrentMember['count']);
+                $tCurrentMember[] = $this->uid;
+                $this->ldap->cd($this->attracted);
+                $this->ldap->modify(['memberUid' => $tCurrentMember]);
+                if (!$this->ldap->success()) {
+                    \msg_dialog::display(_('LDAP error'), \msgPool::ldaperror($this->ldap->get_error(), $this->attracted, LDAP_MOD, __CLASS__));
+                }
+            }
+        }
+    }
+
     public function disassociate(): void
     {
         $this->ldap->cat($this->attracted);
