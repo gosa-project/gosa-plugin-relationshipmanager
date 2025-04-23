@@ -115,6 +115,7 @@ class RelationshipManager extends Plugin
                         break;
                 }
                 $this->is_modified = true;
+                $this->save();
             }
             $this->groupRelationSelect = null;
         }
@@ -238,17 +239,6 @@ class RelationshipManager extends Plugin
             return $displayData;
         }
         return null;
-    }
-
-    function addToGroup($groups)
-    {
-        global $config;
-        /* include global link_info */
-        $ldap = $config->get_ldap_link();
-
-        /* Walk through groups and add the descriptive entry if not exists */
-        foreach ($groups as $value) {
-        }
     }
 
     // Plugin informations for acl handling
