@@ -23,6 +23,7 @@
 namespace GosaRelationshipManager\admin\relationshipmanager;
 
 use \filter as filter;
+use \LDAP as LDAP;
 
 class RelationshipFilter extends filter
 {

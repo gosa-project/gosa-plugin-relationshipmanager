@@ -17,11 +17,11 @@ class ObjectGroupRelationship extends Relationship
         $this->ldap->cat($this->attracted);
         if ($this->ldap->count() == 1) {
             $group = $this->ldap->fetch();
-            if (isset($group["member"]) && in_array($this->attractor, $group['member'])) {
+            if (isset($group['member']) && in_array($this->attractor, $group['member'])) {
                 $this->ldap->cd($this->attracted);
                 $this->ldap->rm(['member' => $this->attractor]);
                 if (!$this->ldap->success()) {
-                    \msg_dialog::display(_("LDAP error"), \msgPool::ldaperror($this->ldap->get_error(), $this->attracted, LDAP_MOD, __CLASS__));
+                    \msg_dialog::display(_('LDAP error'), \msgPool::ldaperror($this->ldap->get_error(), $this->attracted, LDAP_MOD, __CLASS__));
                 }
             }
         }
@@ -29,6 +29,6 @@ class ObjectGroupRelationship extends Relationship
 
     public function relationInfo(): string
     {
-        return sprintf(_("Relation between %s and %s"), $this->attractor, $this->attracted);
+        return sprintf(_('Relation between %s and %s'), $this->attractor, $this->attracted);
     }
 }

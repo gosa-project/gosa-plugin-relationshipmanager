@@ -33,10 +33,10 @@ use \GosaRelationshipManager\admin\relationshipmanager\RelationshipFactory as Re
 class RelationshipManager extends Plugin
 {
     // Definitions
-    public $plHeadline = "Relationship manager";
-    public $plDescription = "Manage user relationship";
-    public $plIcon = "";
-    public $matIcon = "groups";
+    public $plHeadline = 'Relationship manager';
+    public $plDescription = 'Manage user relationship';
+    public $plIcon = '';
+    public $matIcon = 'groups';
 
     // Class attributes
     public $view_logged = false;
@@ -52,7 +52,7 @@ class RelationshipManager extends Plugin
     public $storage = [];
 
     // attribute list for save action
-    public $objectClasses = ["gosaGroupOfNames", "posixGroup"];
+    public $objectClasses = ['gosaGroupOfNames', 'posixGroup'];
     public $objectList = [];
 
     function __construct($config, $dn = null, $parent = null)
@@ -62,12 +62,12 @@ class RelationshipManager extends Plugin
         $this->initTime = microtime(true);
         $this->uid = $this->attrs['uid'][0];
 
-        $this->storage = [get_ou("core", "groupRDN")];
+        $this->storage = [get_ou('core', 'groupRDN')];
 
         // Remember account status
         $this->initially_was_account = $this->is_account;
-        $this->list = new listing(__DIR__ . "/themes/default/RelatedList.xml");
-        $this->filter = new RelationshipFilter(__DIR__ . "/themes/default/RelatedListFilter.xml", ['DN' => $dn, 'UID' => $this->uid]);
+        $this->list = new listing(__DIR__ . '/themes/default/RelatedList.xml');
+        $this->filter = new RelationshipFilter(__DIR__ . '/themes/default/RelatedListFilter.xml', ['DN' => $dn, 'UID' => $this->uid]);
         $this->filter->setObjectStorage($this->storage);
         $this->list->setFilter($this->filter);
         $this->list->showFooter = false;
@@ -81,7 +81,7 @@ class RelationshipManager extends Plugin
         // Log view
         if ($this->is_account && !$this->view_logged) {
             $this->view_logged = true;
-            new log("view", "groups/" . get_class($this), $this->dn);
+            new log('view', 'groups/' . get_class($this), $this->dn);
         }
 
         // Display dialog to allow selection of groups
@@ -130,7 +130,7 @@ class RelationshipManager extends Plugin
                     $relationships[] = RelationshipFactory::createRelationhip($this->dn, $group, $config->get_ldap_link());
                 }
 
-                foreach($relationships as $relationship) {
+                foreach ($relationships as $relationship) {
                     $relationship->disassociate();
                 }
             }
@@ -150,7 +150,7 @@ class RelationshipManager extends Plugin
 
                         $relationship = RelationshipFactory::createRelationhip($this->dn, $this->list->getData($action['targets'][0])['dn'], $config->get_ldap_link());
 
-                        msg_dialog::display("Are you sure?", "Delete: " . $relationship->relationInfo(), CONFIRM_DIALOG);
+                        msg_dialog::display('Are you sure?', 'Delete: ' . $relationship->relationInfo(), CONFIRM_DIALOG);
                         //$relationship->disassociate();
                     }
                 }
@@ -197,9 +197,9 @@ class RelationshipManager extends Plugin
                 $ldap->cd($groupDN);
                 $ldap->modify($attrs);
                 if (!$ldap->success()) {
-                    msg_dialog::display(_("LDAP error"), msgPool::ldaperror($ldap->get_error(), $groupDN, LDAP_MOD, __CLASS__));
+                    msg_dialog::display(_('LDAP error'), msgPool::ldaperror($ldap->get_error(), $groupDN, LDAP_MOD, __CLASS__));
                 } else {
-                    new log("modify", "groups/" . get_class($this), $groupDN, array_keys($attrs), $ldap->get_error());
+                    new log('modify', 'groups/' . get_class($this), $groupDN, array_keys($attrs), $ldap->get_error());
                 }
             }
 
@@ -213,9 +213,9 @@ class RelationshipManager extends Plugin
                 $ldap->cd($groupDN);
                 $ldap->modify($attrs);
                 if (!$ldap->success()) {
-                    msg_dialog::display(_("LDAP error"), msgPool::ldaperror($ldap->get_error(), $groupDN, LDAP_MOD, __CLASS__));
+                    msg_dialog::display(_('LDAP error'), msgPool::ldaperror($ldap->get_error(), $groupDN, LDAP_MOD, __CLASS__));
                 } else {
-                    new log("modify", "groups/" . get_class($this), $groupDN, array_keys($attrs), $ldap->get_error());
+                    new log('modify', 'groups/' . get_class($this), $groupDN, array_keys($attrs), $ldap->get_error());
                 }
             }
 
@@ -226,8 +226,8 @@ class RelationshipManager extends Plugin
     function getAllPosixGroups()
     {
 
-        $filter = "(&(objectClass=posixGroup)(!(memberUid=" . LDAP::escapeValue($this->uid) . ")))";
-        $attrs  = ['cn' => _("Name"), 'description' => _("Description")];
+        $filter = '(&(objectClass=posixGroup)(!(memberUid=' . LDAP::escapeValue($this->uid) . ')))';
+        $attrs  = ['cn' => _('Name'), 'description' => _('Description')];
 
         $ldap = $this->config->get_ldap_link();
         $ldap->cd($this->config->current['BASE']);
@@ -254,8 +254,8 @@ class RelationshipManager extends Plugin
 
     function getAllObjectGroups()
     {
-        $filter = "(&(objectClass=gosaGroupOfNames)(!(member=" . LDAP::escapeValue($this->dn) . ")))";
-        $attrs  = ['cn' => _("Name"), 'description' => _("Description")];
+        $filter = '(&(objectClass=gosaGroupOfNames)(!(member=' . LDAP::escapeValue($this->dn) . ')))';
+        $attrs  = ['cn' => _('Name'), 'description' => _('Description')];
 
         $ldap = $this->config->get_ldap_link();
         $ldap->cd($this->config->current['BASE']);
@@ -294,16 +294,16 @@ class RelationshipManager extends Plugin
     // Plugin informations for acl handling
     static function plInfo()
     {
-        return (array(
-            "plShortName"   => _('Relationship manager'),
-            "plDescription" => _('Manage user relationship'),
-            "plSelfModify"  => false,
-            "plDepends"     => [],
-            "plPriority"    => 1,
-            "plSection"     => array("admin"),
-            "plCategory"    => array("groupmembership" => array("description" => _("Manage user relationship"))),
+        return [
+            'plShortName'   => _('Relationship manager'),
+            'plDescription' => _('Manage user relationship'),
+            'plSelfModify'  => false,
+            'plDepends'     => [],
+            'plPriority'    => 1,
+            'plSection'     => ['admin'],
+            'plCategory'    => ['groupmembership' => array('description' => _('Manage user relationship'))],
 
-            "plProvidedAcls" => ['']
-        ));
+            'plProvidedAcls' => ['']
+        ];
     }
 }

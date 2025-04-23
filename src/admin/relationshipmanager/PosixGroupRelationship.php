@@ -29,11 +29,11 @@ class PosixGroupRelationship extends Relationship
         if ($this->ldap->count() == 1) {
             $group = $this->ldap->fetch();
 
-            if (isset($group["memberUid"]) && in_array($this->uid, $group['memberUid'])) {
+            if (isset($group['memberUid']) && in_array($this->uid, $group['memberUid'])) {
                 $this->ldap->cd($this->attracted);
                 $this->ldap->rm(['memberUid' => $this->uid]);
                 if (!$this->ldap->success()) {
-                    \msg_dialog::display(_("LDAP error"), \msgPool::ldaperror($this->ldap->get_error(), $this->attracted, LDAP_MOD, __CLASS__));
+                    \msg_dialog::display(_('LDAP error'), \msgPool::ldaperror($this->ldap->get_error(), $this->attracted, LDAP_MOD, __CLASS__));
                 }
             }
         }
@@ -41,6 +41,6 @@ class PosixGroupRelationship extends Relationship
 
     public function relationInfo(): string
     {
-        return sprintf(_("Relation between %s and %s"), $this->uid, $this->attracted);
+        return sprintf(_('Relation between %s and %s'), $this->uid, $this->attracted);
     }
 }
