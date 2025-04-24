@@ -161,7 +161,7 @@ class RelationshipManager extends Plugin
         $smarty->assign('posixGroups', $this->getAllPosixGroups());
         $smarty->assign('objectGroups', $this->getAllObjectGroups());
 
-        $defaultDomain = textdomain();
+        $defaultDomain = textdomain(null);
         textdomain('GosaRelationshipManager');
         $display = $smarty->fetch(get_template_path('GroupList.tpl', true, dirname(__FILE__) . '/themes'));
         textdomain($defaultDomain);
