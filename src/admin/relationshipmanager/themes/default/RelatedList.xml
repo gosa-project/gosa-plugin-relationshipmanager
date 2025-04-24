@@ -6,7 +6,7 @@
     <departmentRootVisible>false</departmentRootVisible>
     <baseMode>false</baseMode>
     <multiSelect>true</multiSelect>
-    <template>RelatedList.tpl</template>
+    <template>/vendor/gonicus/gosa2-plugin-relationshipmanager/src/admin/relationshipmanager/themes/default/RelatedList.tpl</template>
     <label>Please select the desired entries</label>
     <defaultSortColumn>1</defaultSortColumn>
 
