@@ -21,7 +21,7 @@ msgstr ""
 #: src/admin/relationshipmanager/RelationshipManager.php:161
 #: src/admin/relationshipmanager/RelationshipManager.php:315
 msgid "Relationship manager"
-msgstr "Entitäten-Bezihung verwalten"
+msgstr "Entitäten-Beziehung verwalten"
 
 #: src/admin/relationshipmanager/RelationshipManager.php:35
 #: src/admin/relationshipmanager/RelationshipManager.php:316
@@ -41,7 +41,7 @@ msgstr "LDAP Fehler"
 #: src/admin/relationshipmanager/RelationshipManager.php:316
 #: src/admin/relationshipmanager/RelationshipManager.php:321
 msgid "Group membership"
-msgstr ""
+msgstr "Gruppenzugehörigkeit"
 
 #: src/admin/relationshipmanager/RelationshipManager.php:162
 #: src/admin/relationshipmanager/RelationshipManager.php:230
@@ -67,4 +67,8 @@ msgstr "Objektgruppen"
 #: src/admin/relationshipmanager/default/group-list.tpl:15
 #: src/admin/relationshipmanager/RelationshipManager.php:193
 msgid "Posix group"
-msgstr "Posixgruppe"
+msgstr "Posixgruppen"
+
+#: src/admin/relationshipmanager/RelationshipManager.php:258
+msgid "Allow to edit relationships."
+msgstr "Bearbeiten von Verknüpfungen erlauben."

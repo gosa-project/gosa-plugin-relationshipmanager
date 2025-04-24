@@ -58,6 +58,8 @@ class RelationshipManager extends Plugin
     function __construct($config, $dn = null, $parent = null)
     {
         parent::__construct($config, $dn, $parent);
+        $this->plHeadline = __('Relationship manager');
+        $this->plDescription = __('Manage user relationship');
 
         $this->initTime = microtime(true);
         $this->uid = $this->attrs['uid'][0];
@@ -159,7 +161,11 @@ class RelationshipManager extends Plugin
         $smarty->assign('posixGroups', $this->getAllPosixGroups());
         $smarty->assign('objectGroups', $this->getAllObjectGroups());
 
-        return $smarty->fetch(get_template_path('GroupList.tpl', true, dirname(__FILE__) . '/themes'));
+        $defaultDomain = textdomain();
+        textdomain('GosaRelationshipManager');
+        $display = $smarty->fetch(get_template_path('GroupList.tpl', true, dirname(__FILE__) . '/themes'));
+        textdomain($defaultDomain);
+        return $display;
     }
 
     function save()
@@ -245,15 +251,16 @@ class RelationshipManager extends Plugin
     static function plInfo()
     {
         return [
-            'plShortName'   => _('Relationship manager'),
-            'plDescription' => _('Manage user relationship'),
+            'plShortName'   => __('Relationship manager'),
+            'plDescription' => __('Manage user relationship'),
             'plSelfModify'  => false,
             'plDepends'     => [],
             'plPriority'    => 1,
             'plSection'     => ['admin'],
             'plCategory'    => ['groupmembership' => array('description' => _('Manage user relationship'))],
-
-            'plProvidedAcls' => ['']
+            'plProvidedAcls' => [
+                'relationshipmanager' => __('Allow to edit relationships.')
+            ]
         ];
     }
 }
