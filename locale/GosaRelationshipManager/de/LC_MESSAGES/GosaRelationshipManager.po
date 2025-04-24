@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
@@ -72,3 +71,21 @@ msgstr "Posixgruppen"
 #: src/admin/relationshipmanager/RelationshipManager.php:258
 msgid "Allow to edit relationships."
 msgstr "Bearbeiten von Verknüpfungen erlauben."
+
+msgid "Objectgroup membership"
+msgstr "Objektgruppen"
+
+msgid "Posix group membership"
+msgstr "Posixgruppen"
+
+msgid "Delete relationship"
+msgstr "Verknüpfung lösen"
+
+msgid "Actions"
+msgstr "Aktionen"
+
+msgid "Common name"
+msgstr "Domänenname"
+
+msgid "Please select the desired entries"
+msgstr "Bitte wählen Sie die gewünschten Einträge"

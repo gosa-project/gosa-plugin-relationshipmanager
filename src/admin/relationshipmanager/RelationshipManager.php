@@ -68,11 +68,15 @@ class RelationshipManager extends Plugin
 
         // Remember account status
         $this->initially_was_account = $this->is_account;
+
+        $defaultDomain = textdomain(null);
+        textdomain('GosaRelationshipManager');
         $this->list = new listing(__DIR__ . '/themes/default/RelatedList.xml');
         $this->filter = new RelationshipFilter(__DIR__ . '/themes/default/RelatedListFilter.xml', ['DN' => $dn, 'UID' => $this->uid]);
         $this->filter->setObjectStorage($this->storage);
         $this->list->setFilter($this->filter);
         $this->list->showFooter = false;
+        textdomain($defaultDomain);
     }
 
     function execute()
@@ -156,13 +160,13 @@ class RelationshipManager extends Plugin
         }
 
         // Assign values
+        $defaultDomain = textdomain(null);
+        textdomain('GosaRelationshipManager');
         $this->list->update();
         $smarty->assign('objectList', $this->list->render());
         $smarty->assign('posixGroups', $this->getAllPosixGroups());
         $smarty->assign('objectGroups', $this->getAllObjectGroups());
 
-        $defaultDomain = textdomain(null);
-        textdomain('GosaRelationshipManager');
         $display = $smarty->fetch(get_template_path('GroupList.tpl', true, dirname(__FILE__) . '/themes'));
         textdomain($defaultDomain);
         return $display;

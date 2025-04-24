@@ -66,3 +66,21 @@ msgstr ""
 #: src/admin/relationshipmanager/RelationshipManager.php:258
 msgid "Allow to edit relationships."
 msgstr ""
+
+msgid "Objectgroup membership"
+msgstr ""
+
+msgid "Posix group membership"
+msgstr ""
+
+msgid "Delete relationship"
+msgstr ""
+
+msgid "Actions"
+msgstr ""
+
+msgid "Common name"
+msgstr ""
+
+msgid "Please select the desired entries"
+msgstr ""

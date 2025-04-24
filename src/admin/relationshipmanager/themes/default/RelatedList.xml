@@ -35,7 +35,7 @@
     </column>
 
     <column>
-      <label>description</label>
+      <label>Description</label>
       <sortAttribute>description</sortAttribute>
       <sortType>string</sortType>
       <value>%{description}</value>
