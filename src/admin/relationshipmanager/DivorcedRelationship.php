@@ -20,4 +20,9 @@ class DivorcedRelationship extends Relationship
     {
         return "";
     }
+
+    public function associate(): void
+    {
+
+    }
 }
