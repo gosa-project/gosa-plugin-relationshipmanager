@@ -1,7 +1,10 @@
 <?php
 
-namespace GosaRelManager\admin\relationshipmanager;
+namespace GosaRelationshipManager\admin\relationshipmanager;
 
-function __($GETTEXT) {
-    return dgettext("relationshipManager", $GETTEXT);
+$success = bindtextdomain('GosaRelationshipManager', dirname(dirname(__FILE__)) . '/locale/compiled');
+
+function __(string $GETTEXT): string
+{
+    return dgettext('GosaRelationshipManager', $GETTEXT);
 }

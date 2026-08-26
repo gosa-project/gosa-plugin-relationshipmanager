@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<list>
+  <definition>
+    <departmentBrowser>false</departmentBrowser>
+    <departmentRootVisible>false</departmentRootVisible>
+    <baseMode>false</baseMode>
+    <multiSelect>true</multiSelect>
+    <template>/vendor/gonicus/gosa2-plugin-relationshipmanager/src/admin/relationshipmanager/themes/default/RelatedList.tpl</template>
+    <label>Please select the desired entries</label>
+    <defaultSortColumn>1</defaultSortColumn>
+
+    <objectType>
+      <label>Relation</label>
+      <objectClass>posixGroup</objectClass>
+      <category>groups</category>
+      <class>group</class>
+    </objectType>
+
+  </definition>
+
+  <table>
+    <layout>|20px;c|||185px;r|</layout>
+
+    <column>
+      <value>%{filter:objectType(dn,objectClass)}</value>
+    </column>
+
+    <column>
+      <label>Common name</label>
+      <sortAttribute>cn</sortAttribute>
+      <sortType>string</sortType>
+      <value>%{cn}</value>
+      <export>false</export>
+    </column>
+
+    <column>
+      <label>Description</label>
+      <sortAttribute>description</sortAttribute>
+      <sortType>string</sortType>
+      <value>%{description}</value>
+      <export>false</export>
+    </column>
+
+    <column>
+      <label>Actions</label>
+      <value>%{filter:actions(dn,row,objectClass)}</value>
+    </column>
+
+  </table>
+
+  <actionmenu>
+    <action>
+      <name>delete</name>
+      <type>entry</type>
+      <image>delete</image>
+      <label>Delete relationship</label>
+    </action>
+  </actionmenu>
+
+  <actiontriggers snapshot="false" copypaste="false">
+    <action>
+      <name>delete</name>
+      <type>entry</type>
+      <image>delete</image>
+      <label>Delete relationship</label>
+    </action>
+  </actiontriggers>
+
+</list>

@@ -18,91 +18,140 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-namespace GosaRelManager\admin\relationshipmanager;
+namespace GosaRelationshipManager\admin\relationshipmanager;
 
 use \plugin as Plugin;
 use \msgPool as msgPool;
 use \log as log;
 use \msg_dialog as msg_dialog;
-use \sortableListing as sortableListing;
-use \stats as stats;
+use \listing as listing;
+use \filter as filter;
 use \LDAP as LDAP;
+use \GosaRelationshipManager\admin\relationshipmanager\groupRelationshipSelect\GroupRelationshipSelect as GroupRelationshipSelect;
+use \GosaRelationshipManager\admin\relationshipmanager\RelationshipFactory as RelationshipFactory;
 
 class RelationshipManager extends Plugin
 {
     // Definitions
-    public $plHeadline = "Relationship manager";
-    public $plDescription = "Manage user relationship";
-    public $plIcon = "";
-    public $matIcon = "groups";
+    public $plHeadline = 'Relationship manager';
+    public $plDescription = 'Manage user relationship';
+    public $plIcon = '';
+    public $matIcon = 'groups';
 
     // Class attributes
     public $view_logged = false;
     public $uid = "";
+    public $groupRelationSelect;
+    public listing $list;
+    public filter $filter;
+    public $listData = [];
+    public $initTime;
+    public $addToPosixGroups = [];
+    public $addToObjectgroups = [];
+    public ResourceType $currentResourceType;
+    public $storage = [];
 
     // attribute list for save action
-    public $objectClasses = ["gosaGroupOfNames", "posixGroup"];
+    public $objectClasses = ['gosaGroupOfNames', 'posixGroup'];
     public $objectList = [];
-    public sortableListing $list;
-    public $initTime;
-    public $plugin;
 
-    function __construct(&$config, $dn = NULL, $parent = NULL)
+    function __construct($config, $dn = null, $parent = null)
     {
         parent::__construct($config, $dn, $parent);
+        $this->plHeadline = __('Relationship manager');
+        $this->plDescription = __('Manage user relationship');
 
-        $this->initTime = microtime(TRUE);
+        $this->initTime = microtime(true);
         $this->uid = $this->attrs['uid'][0];
+
+        $this->storage = [get_ou('core', 'groupRDN')];
 
         // Remember account status
         $this->initially_was_account = $this->is_account;
 
-        stats::log(
-            'plugin',
-            $class = get_class($this),
-            $category = array($this->acl_category),
-            $action = 'open',
-            $amount = 1,
-            $duration = (microtime(TRUE) - $this->initTime)
-        );
+        $defaultDomain = textdomain(null);
+        textdomain('GosaRelationshipManager');
+        $this->list = new listing(__DIR__ . '/themes/default/RelatedList.xml');
+        $this->filter = new RelationshipFilter(__DIR__ . '/themes/default/RelatedListFilter.xml', ['DN' => $dn, 'UID' => $this->uid]);
+        $this->filter->setObjectStorage($this->storage);
+        $this->list->setFilter($this->filter);
+        $this->list->showFooter = false;
+        textdomain($defaultDomain);
     }
 
     function execute()
     {
+        global $config;
         parent::execute();
 
         // Log view
         if ($this->is_account && !$this->view_logged) {
             $this->view_logged = true;
-            new log("view", "groups/" . get_class($this), $this->dn);
+            new log('view', 'groups/' . get_class($this), $this->dn);
         }
 
-        if (empty($this->list)) {
-            $this->refreshGroupList();
+        // Display dialog to allow selection of groups
+        if (isset($_POST['edit_posixgroupmembership'])) {
+            $this->currentResourceType = ResourceType::POSIX_GROUP;
+            $this->groupRelationSelect = new GroupRelationshipSelect($config, get_userinfo(), $this->currentResourceType, $this->uid);
         }
 
-        foreach (array_keys($_POST) as $postParam) {
-            if (strpos($postParam, 'del_') === 0) {
-                $releaseAction = "removeFromGroup";
-                $list = $this->list;
-                if ($list !== null) {
-                    if (strpos($postParam, $list->getListId())) {
-                        // ATTENTION: WORKAROUND
-                        // sortableListing is checking $_REQUEST['PID'] for being the active one
-                        // but having more than one listing on one page will set the PID value
-                        // to the latest sortableListing object that is displayed.
-                        $_REQUEST['PID'] = $list->getListId();
-                        $list->save_object();
-                        $action = $list->getAction();
-                        $this->$releaseAction($list->getData($action['targets'][0])['dn']);
-                    }
+        // Display dialog to allow selection of groups
+        if (isset($_POST['edit_objectgroupmembership'])) {
+            $this->currentResourceType = ResourceType::OBJECT_GROUP;
+            $this->groupRelationSelect = new GroupRelationshipSelect($config, get_userinfo(), $this->currentResourceType, $this->dn);
+        }
+
+        // Cancel group dialog
+        if (isset($_POST['cancel-abort'])) {
+            $this->groupRelationSelect = null;
+        }
+
+        // Add groups selected in groupSelect dialog to ours.
+        if (isset($_POST['ok-save']) && $this->groupRelationSelect) {
+            $groups = $this->groupRelationSelect->detectPostActions();
+            if (isset($groups['targets'])) {
+                switch ($this->currentResourceType) {
+                    case ResourceType::POSIX_GROUP:
+                        $this->addToPosixGroups = $groups['targets'];
+                        break;
+
+                    case ResourceType::OBJECT_GROUP:
+                        $this->addToObjectgroups = $groups['targets'];
+                        break;
+                }
+                $this->is_modified = true;
+                $this->save();
+            }
+            $this->groupRelationSelect = null;
+        }
+
+        // get action from our plugins list
+        if ($this->list->getAction() !== null) {
+            $tAction = $this->list->getAction();
+            // for now we just use the delete action
+            if ($tAction['action'] === 'delete') {
+                $relationships = [];
+                foreach ($tAction['targets'] as $group) {
+                    $relationships[] = RelationshipFactory::createRelationhip($this->dn, $group, $config->get_ldap_link());
+                }
+
+                foreach ($relationships as $relationship) {
+                    $relationship->disassociate();
                 }
             }
         }
 
-
         // Load Smarty
         $smarty = get_smarty();
+
+        // Render group select template if set.
+        if ($this->groupRelationSelect) {
+            $this->dialog = true;
+            return $this->groupRelationSelect->execute();
+        } else {
+            $this->dialog = false;
+        }
 
         // Assign acls
         $tmp = $this->plInfo();
@@ -111,123 +160,45 @@ class RelationshipManager extends Plugin
         }
 
         // Assign values
-        $smarty->assign('objectList', $this->objectList);
+        $defaultDomain = textdomain(null);
+        textdomain('GosaRelationshipManager');
+        $this->list->update();
+        $smarty->assign('objectList', $this->list->render());
         $smarty->assign('posixGroups', $this->getAllPosixGroups());
         $smarty->assign('objectGroups', $this->getAllObjectGroups());
 
-        return ($smarty->fetch(get_template_path('group-list.tpl', TRUE, dirname(__FILE__))));
+        $display = $smarty->fetch(get_template_path('GroupList.tpl', true, dirname(__FILE__) . '/themes'));
+        textdomain($defaultDomain);
+        return $display;
     }
 
     function save()
     {
-        $ldap = $this->config->get_ldap_link();
+        global $config;
+        $ldap = $config->get_ldap_link();
 
         parent::save();
 
-        if (isset($_POST["object_group_selection"])) {
-            $attrs = ['member' => $this->dn];
-
-            foreach (get_post("object_group_selection") as $groupDN) {
-                $ldap->cd($groupDN);
-                $ldap->modify($attrs);
-                if (!$ldap->success()) {
-                    msg_dialog::display(_("LDAP error"), msgPool::ldaperror($ldap->get_error(), $groupDN, LDAP_MOD, __CLASS__));
-                } else {
-                    new log("modify", "groups/" . get_class($this), $groupDN, array_keys($attrs), $ldap->get_error());
-                }
-            }
+        foreach ($this->addToObjectgroups as $groupDN) {
+            $tObjectRelationship = new ObjectGroupRelationship($this->dn, $groupDN, $ldap);
+            $tObjectRelationship->associate();
         }
 
-        if (isset($_POST["posix_group_selection"])) {
-            $attrs = ['memberUid' => $this->uid];
+        $this->addToObjectgroups = [];
 
-            foreach ($_POST["posix_group_selection"] as $groupDN) {
-                $ldap->cd($groupDN);
-                $ldap->modify($attrs);
-                if (!$ldap->success()) {
-                    msg_dialog::display(_("LDAP error"), msgPool::ldaperror($ldap->get_error(), $groupDN, LDAP_MOD, __CLASS__));
-                } else {
-                    new log("modify", "groups/" . get_class($this), $groupDN, array_keys($attrs), $ldap->get_error());
-                }
-            }
-        }
-    }
-
-    /**
-     * Updates the list of groups in which the current user is a member. 
-     */
-    function refreshGroupList()
-    {
-        $msg = _("Group membership");
-        $attrs = ['cn' => _("Name"), 'description' => _("Description")];
-
-        $list = new sortableListing();
-        $list->setDeleteable(true);
-        $list->setEditable(false);
-        $list->setWidth("100%");
-        $list->setHeight("80px");
-        $list->setHeader(array_values(array_merge($attrs, [_("Type")])));
-        $list->setDefaultSortColumn(0);
-        $list->setAcl('rwcdm');
-
-        $data = [];
-        $displayData = [];
-
-        foreach ($this->objectClasses as $key => $objectClass) {
-            $ldap = $this->config->get_ldap_link();
-            $ldap->cd($this->config->current['BASE']);
-            $str = "";
-            $type = "";
-
-            if ($objectClass == 'gosaGroupOfNames') {
-                $ldap->search(
-                    "(&(objectClass=$objectClass)(member=" . LDAP::escapeValue($this->dn) . "))",
-                    array_merge(array_keys($attrs), ['dn'])
-                );
-                $type = _("Objectgroup");
-            } elseif ($objectClass == 'posixGroup') {
-                $ldap->search(
-                    "(&(objectClass=$objectClass)(memberUid=" . LDAP::escapeValue($this->uid) . "))",
-                    array_merge(array_keys($attrs), ['dn'])
-                );
-                $type = _("Posix group");
-            }
-
-            if (!$ldap->success()) {
-                msg_dialog::display(_("LDAP error"), msgPool::ldaperror($ldap->get_error(), $this->dn, LDAP_SEARCH, __CLASS__));
-            } elseif ($ldap->count()) {
-                while ($result = $ldap->fetch()) {
-                    $entry = array();
-                    foreach ($attrs as $name => $desc) {
-                        $value = "";
-                        if (isset($result[$name][0])) $value = $result[$name][0];
-                        $entry['data'][] = $value;
-                    }
-                    $entry = array_filter($entry);
-
-                    array_push($entry['data'], $type);
-                    $displayData[] = $entry;
-                    $entry['dn'] = $result['dn'];
-                    $data[] = $entry;
-                }
-            }
+        foreach ($this->addToPosixGroups as $groupDN) {
+            $tPosixRelationship = new PosixGroupRelationship($this->dn, $groupDN, $ldap);
+            $tPosixRelationship->associate();
         }
 
-        $list->setListData($data, $displayData);
-        $list->update();
-        $str .= "<h2>" . $msg . "</h2><div class='row'><div class='col s12'>";
-        $str .= $list->render();
-        $str .= "</div></div>";
-        $str .= "<br>";
-        $this->list = $list;
-        $this->objectList = $str;
+        $this->addToPosixGroups = [];
     }
 
     function getAllPosixGroups()
     {
 
-        $filter = "(&(objectClass=posixGroup)(!(memberUid=" . LDAP::escapeValue($this->uid) . ")))";
-        $attrs  = ['cn' => _("Name"), 'description' => _("Description")];
+        $filter = '(&(objectClass=posixGroup)(!(memberUid=' . LDAP::escapeValue($this->uid) . ')))';
+        $attrs  = ['cn' => _('Name'), 'description' => _('Description')];
 
         $ldap = $this->config->get_ldap_link();
         $ldap->cd($this->config->current['BASE']);
@@ -237,7 +208,7 @@ class RelationshipManager extends Plugin
             $data = [];
             $displayData = [];
             while ($result = $ldap->fetch()) {
-                $entry = array();
+                $entry = [];
                 foreach ($attrs as $name => $desc) {
                     $value = "";
                     if (isset($result[$name][0])) $value = $result[$name][0];
@@ -254,8 +225,8 @@ class RelationshipManager extends Plugin
 
     function getAllObjectGroups()
     {
-        $filter = "(&(objectClass=gosaGroupOfNames)(!(member=" . LDAP::escapeValue($this->dn) . ")))";
-        $attrs  = ['cn' => _("Name"), 'description' => _("Description")];
+        $filter = '(&(objectClass=gosaGroupOfNames)(!(member=' . LDAP::escapeValue($this->dn) . ')))';
+        $attrs  = ['cn' => _('Name'), 'description' => _('Description')];
 
         $ldap = $this->config->get_ldap_link();
         $ldap->cd($this->config->current['BASE']);
@@ -265,7 +236,7 @@ class RelationshipManager extends Plugin
             $data = [];
             $displayData = [];
             while ($result = $ldap->fetch()) {
-                $entry = array();
+                $entry = [];
                 foreach ($attrs as $name => $desc) {
                     $value = "";
                     if (isset($result[$name][0])) $value = $result[$name][0];
@@ -280,47 +251,20 @@ class RelationshipManager extends Plugin
         return null;
     }
 
-    function removeFromGroup(string $dn)
-    {
-        $removeMember = "";
-        $groupMemberName = "";
-        
-        $ldap = $this->config->get_ldap_link();
-        $ldap->cat($dn);
-        if ($ldap->count() == 1) {
-            $group = $ldap->fetch();
-            if (isset($group["member"]) && in_array($this->dn, $group['member'])) {
-                $groupMemberName = 'member';
-                $removeMember = $this->dn;
-            }
-            if (isset($group["memberUid"]) && in_array($this->uid, $group['memberUid'])) {
-                $groupMemberName = 'memberUid';
-                $removeMember = $this->uid;
-            }
-        
-            $ldap->cd($dn);
-            $ldap->rm([$groupMemberName => $removeMember]);
-            if (!$ldap->success()) {
-                msg_dialog::display(_("LDAP error"), msgPool::ldaperror($ldap->get_error(), $dn, LDAP_MOD, __CLASS__));
-            }
-        }
-
-        $this->refreshGroupList();
-    }
-
     // Plugin informations for acl handling
     static function plInfo()
     {
-        return (array(
-            "plShortName"   => _('Group membership'),
-            "plDescription" => _('Group membership'),
-            "plSelfModify"  => FALSE,
-            "plDepends"     => array(),
-            "plPriority"    => 1,
-            "plSection"     => array("admin"),
-            "plCategory"    => array("groupmembership" => array("description" => _("Group membership"))),
-
-            "plProvidedAcls" => array()
-        ));
+        return [
+            'plShortName'   => __('Relationship manager'),
+            'plDescription' => __('Manage user relationship'),
+            'plSelfModify'  => false,
+            'plDepends'     => [],
+            'plPriority'    => 1,
+            'plSection'     => ['admin'],
+            'plCategory'    => ['groupmembership' => array('description' => _('Manage user relationship'))],
+            'plProvidedAcls' => [
+                'relationshipmanager' => __('Allow to edit relationships.')
+            ]
+        ];
     }
 }

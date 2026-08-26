@@ -1,6 +1,6 @@
 {
     "name": "gonicus/gosa2-plugin-relationshipmanager",
-    "description": "GOsa² plugin for user relationship management",
+    "description": "GOsa² plugin for relationship management",
     "type": "library",
     "license": [
         "GPL-2.0-or-later"
@@ -13,10 +13,10 @@
             "src/admin/relationshipmanager"
         ],
         "psr-4": {
-            "GosaRelManager\\" : "src/"
+            "GosaRelationshipManager\\" : "src/"
         },
         "files": [
-            "./src/functions.php"
+            "src/functions.php"
         ]
     },
     "authors": [
@@ -25,8 +25,6 @@
             "role": "Developer",
             "homepage": "https://www.gonicus.de"
         }
-    ],
-    "support": {
-    }
+    ]
 }
 

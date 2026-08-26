@@ -1,3 +1,4 @@
-The relationship management Plugin for GOsa is developed by
+The relationship management Plugin for GOsa is developed by GONICUS
 
   Sebastian Sternfeld <sternfeld@gonicus.de>
+  Benjamin Zapiec <zapiec@gonicus.de>
